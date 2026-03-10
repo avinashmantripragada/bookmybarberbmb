@@ -1,0 +1,161 @@
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Check, Smartphone, CreditCard, Banknote, Wallet } from 'lucide-react';
+import { toast } from 'sonner';
+
+const paymentMethods = [
+  { id: 'shop', label: 'Pay in Shop', icon: Banknote, desc: 'Pay cash at the shop' },
+  { id: 'upi', label: 'UPI', icon: Smartphone, desc: 'Google Pay, PhonePe, etc.' },
+  { id: 'paytm', label: 'Paytm', icon: Wallet, desc: 'Paytm wallet or UPI' },
+  { id: 'card', label: 'Card', icon: CreditCard, desc: 'Credit / Debit card' },
+];
+
+const PaymentPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as any;
+  const [selected, setSelected] = useState('shop');
+  const [processing, setProcessing] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+
+  const handlePayment = () => {
+    setProcessing(true);
+    setTimeout(() => {
+      setProcessing(false);
+      setConfirmed(true);
+      toast.success('Booking confirmed!');
+    }, 1500);
+  };
+
+  if (confirmed) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200 }}
+          className="w-24 h-24 rounded-full gold-gradient flex items-center justify-center mb-6"
+        >
+          <Check size={48} className="text-primary-foreground" />
+        </motion.div>
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-2xl font-bold text-foreground mb-2"
+        >
+          Booking Confirmed!
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-muted-foreground text-center mb-8"
+        >
+          Your appointment has been booked. You'll receive a confirmation shortly.
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="w-full space-y-3"
+        >
+          <button
+            onClick={() => navigate('/appointments')}
+            className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg"
+          >
+            View My Appointments
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            className="w-full h-14 bg-secondary rounded-2xl font-semibold text-foreground text-lg"
+          >
+            Back to Home
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="flex items-center gap-3 px-5 pt-14 pb-4">
+        <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+          <ArrowLeft size={20} className="text-foreground" />
+        </button>
+        <h1 className="text-xl font-bold text-foreground">Payment</h1>
+      </div>
+
+      {state && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="px-5 mb-6"
+        >
+          <div className="glass-card p-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="font-medium text-foreground">{state.service?.name}</p>
+                <p className="text-sm text-muted-foreground">{state.date} • {state.time}</p>
+              </div>
+              <span className="text-xl font-bold gold-text">₹{state.service?.price}</span>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      <div className="px-5">
+        <h2 className="text-lg font-semibold text-foreground mb-3">Payment Method</h2>
+        <div className="space-y-2">
+          {paymentMethods.map((method, i) => (
+            <motion.button
+              key={method.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              onClick={() => setSelected(method.id)}
+              className={`w-full glass-card p-4 flex items-center gap-4 text-left transition-all ${
+                selected === method.id ? 'ring-2 ring-primary' : ''
+              }`}
+            >
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                selected === method.id ? 'gold-gradient' : 'bg-secondary'
+              }`}>
+                <method.icon size={22} className={selected === method.id ? 'text-primary-foreground' : 'text-muted-foreground'} />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground">{method.label}</p>
+                <p className="text-xs text-muted-foreground">{method.desc}</p>
+              </div>
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                selected === method.id ? 'border-primary' : 'border-muted-foreground/30'
+              }`}>
+                {selected === method.id && <div className="w-2.5 h-2.5 rounded-full gold-gradient" />}
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
+      <div className="px-5 mt-8">
+        <button
+          onClick={handlePayment}
+          disabled={processing}
+          className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform disabled:opacity-60"
+        >
+          {processing ? (
+            <span className="flex items-center justify-center gap-2">
+              <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+              Processing...
+            </span>
+          ) : (
+            `Pay ₹${state?.service?.price || 0}`
+          )}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default PaymentPage;
