@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import logoImg from '/logo.png';
 import { Scissors } from 'lucide-react';
 import { toast } from 'sonner';
 
