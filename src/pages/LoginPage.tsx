@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import logoImg from '/logo.png';
 import { Scissors } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -26,9 +27,7 @@ const LoginPage = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <div className="w-20 h-20 rounded-3xl gold-gradient flex items-center justify-center mx-auto mb-6">
-            <Scissors size={36} className="text-primary-foreground" />
-          </div>
+          <img src={logoImg} alt="Book My Barber" className="w-24 h-24 rounded-3xl mx-auto mb-6" />
           <h1 className="text-3xl font-bold text-foreground mb-2">Book My Barber</h1>
           <p className="text-muted-foreground">Your grooming, simplified</p>
         </motion.div>
