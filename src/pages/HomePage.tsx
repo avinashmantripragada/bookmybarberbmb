@@ -32,9 +32,12 @@ const HomePage = () => {
           transition={{ duration: 0.4 }}
         >
           <div className="flex items-center justify-between mb-1">
-            <div>
-              <p className="text-sm text-muted-foreground">Good morning 👋</p>
-              <h1 className="text-2xl font-bold text-foreground">Find your barber</h1>
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="BookMyBarber" className="w-10 h-10 rounded-xl" />
+              <div>
+                <h1 className="text-lg font-bold gold-text leading-tight">BookMyBarber</h1>
+                <p className="text-xs text-muted-foreground">Your grooming, simplified</p>
+              </div>
             </div>
             <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
               <MapPin size={18} className="text-primary" />
