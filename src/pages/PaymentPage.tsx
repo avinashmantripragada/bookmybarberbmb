@@ -131,7 +131,7 @@ const PaymentPage = () => {
             View My Appointments
           </button>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/home')}
             className="w-full h-14 bg-secondary rounded-2xl font-semibold text-foreground text-lg"
           >
             Back to Home

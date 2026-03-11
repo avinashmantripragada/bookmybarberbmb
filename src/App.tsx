@@ -42,8 +42,8 @@ const App = () => {
         <BrowserRouter>
           <div className="max-w-lg mx-auto relative">
             <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/welcome" element={<WelcomePage />} />
+              <Route path="/" element={<WelcomePage />} />
+              <Route path="/home" element={<HomePage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/signin" element={<SignInPage />} />
               <Route path="/verify" element={<VerifyPage />} />

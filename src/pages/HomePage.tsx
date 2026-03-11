@@ -45,16 +45,15 @@ const HomePage = () => {
               <AppLogo size="sm" />
               <div>
                 <h1 className="text-lg font-bold gold-text leading-tight">BookMyBarber</h1>
-                <p className="text-xs text-muted-foreground">Your grooming, simplified.</p>
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <MapPin size={10} /> Bangalore, Karnataka
+                </p>
               </div>
             </div>
             <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
               <MapPin size={18} className="text-primary" />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <MapPin size={12} /> Bangalore, Karnataka
-          </p>
         </motion.div>
       </div>
 

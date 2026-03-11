@@ -34,7 +34,7 @@ const VerifyPage = () => {
     if (state?.role === 'barber') {
       navigate('/barber-onboarding');
     } else {
-      navigate('/');
+      navigate('/home');
     }
   };
 

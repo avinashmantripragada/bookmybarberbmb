@@ -14,7 +14,7 @@ const SignInPage = () => {
     if (!emailOrPhone.trim()) { toast.error('Enter email or phone number'); return; }
     if (!password) { toast.error('Enter your password'); return; }
     toast.success('Welcome back!');
-    navigate('/');
+    navigate('/home');
   };
 
   return (
