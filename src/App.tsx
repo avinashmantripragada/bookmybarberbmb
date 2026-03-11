@@ -5,8 +5,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BottomNav from "@/components/BottomNav";
 import SplashScreen from "@/components/SplashScreen";
+
+// Pages
 import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
+import WelcomePage from "./pages/WelcomePage";
+import SignUpPage from "./pages/SignUpPage";
+import SignInPage from "./pages/SignInPage";
+import VerifyPage from "./pages/VerifyPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import BarberProfilePage from "./pages/BarberProfilePage";
 import BookingPage from "./pages/BookingPage";
 import PaymentPage from "./pages/PaymentPage";
@@ -14,6 +20,7 @@ import AppointmentsPage from "./pages/AppointmentsPage";
 import ReviewPage from "./pages/ReviewPage";
 import ProfilePage from "./pages/ProfilePage";
 import BarberDashboard from "./pages/BarberDashboard";
+import BarberOnboardingPage from "./pages/BarberOnboardingPage";
 import SearchPage from "./pages/SearchPage";
 import NotFound from "./pages/NotFound";
 
@@ -36,7 +43,12 @@ const App = () => {
           <div className="max-w-lg mx-auto relative">
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
+              <Route path="/welcome" element={<WelcomePage />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/signin" element={<SignInPage />} />
+              <Route path="/verify" element={<VerifyPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/login" element={<SignInPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/barber/:id" element={<BarberProfilePage />} />
               <Route path="/booking/:id" element={<BookingPage />} />
@@ -45,6 +57,7 @@ const App = () => {
               <Route path="/review" element={<ReviewPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/dashboard" element={<BarberDashboard />} />
+              <Route path="/barber-onboarding" element={<BarberOnboardingPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <BottomNav />
