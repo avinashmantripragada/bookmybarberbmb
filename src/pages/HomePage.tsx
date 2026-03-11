@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Search, MapPin, SlidersHorizontal } from 'lucide-react';
 import { mockBarbers } from '@/data/mockData';
 import BarberCard from '@/components/BarberCard';
+import AppLogo from '@/components/AppLogo';
 
 const HomePage = () => {
   const [search, setSearch] = useState('');
@@ -33,10 +34,10 @@ const HomePage = () => {
         >
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="BookMyBarber" className="w-10 h-10 rounded-xl" />
+              <AppLogo size="sm" />
               <div>
                 <h1 className="text-lg font-bold gold-text leading-tight">BookMyBarber</h1>
-                <p className="text-xs text-muted-foreground">Your grooming, simplified</p>
+                <p className="text-xs text-muted-foreground">Your grooming, simplified.</p>
               </div>
             </div>
             <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
