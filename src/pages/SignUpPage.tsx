@@ -1,9 +1,20 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import AppLogo from '@/components/AppLogo';
 import { toast } from 'sonner';
+
+const countryCodes = [
+  { code: '+1', flag: '🇺🇸', name: 'US' },
+  { code: '+91', flag: '🇮🇳', name: 'IN' },
+  { code: '+44', flag: '🇬🇧', name: 'UK' },
+  { code: '+61', flag: '🇦🇺', name: 'AU' },
+  { code: '+971', flag: '🇦🇪', name: 'UAE' },
+  { code: '+966', flag: '🇸🇦', name: 'SA' },
+  { code: '+65', flag: '🇸🇬', name: 'SG' },
+  { code: '+81', flag: '🇯🇵', name: 'JP' },
+];
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -15,6 +26,8 @@ const SignUpPage = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [countryCode, setCountryCode] = useState(countryCodes[0]);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [role, setRole] = useState<'customer' | 'barber'>(
     preselectedRole === 'barber' ? 'barber' : 'customer'
   );
@@ -22,11 +35,16 @@ const SignUpPage = () => {
   const handleSubmit = () => {
     if (!name.trim()) { toast.error('Enter your name'); return; }
     if (!email.trim()) { toast.error('Enter your email'); return; }
-    if (!phone || phone.length < 10) { toast.error('Enter a valid phone number'); return; }
+    if (!phone || phone.length < 7) { toast.error('Enter a valid phone number'); return; }
     if (!password || password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
 
     toast.success('Account created! Please verify your phone.');
-    navigate('/verify', { state: { phone, role } });
+    navigate('/verify', { state: { phone: `${countryCode.code} ${phone}`, role } });
+  };
+
+  const handleGuest = () => {
+    toast.success('Continuing as guest');
+    navigate('/home');
   };
 
   return (
@@ -64,13 +82,37 @@ const SignUpPage = () => {
             className="w-full h-14 px-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
           <div className="relative">
-            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">+91</span>
+            <button
+              onClick={() => setShowCountryPicker(!showCountryPicker)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-sm text-muted-foreground z-10 px-1 py-1 rounded-lg hover:bg-muted/30 transition-colors"
+            >
+              <span>{countryCode.flag}</span>
+              <span className="text-xs">{countryCode.code}</span>
+              <ChevronDown size={12} />
+            </button>
+            {showCountryPicker && (
+              <div className="absolute left-0 top-full mt-1 w-48 bg-card border border-border rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto">
+                {countryCodes.map((c) => (
+                  <button
+                    key={c.code}
+                    onClick={() => { setCountryCode(c); setShowCountryPicker(false); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-secondary transition-colors ${
+                      c.code === countryCode.code ? 'text-primary' : 'text-foreground'
+                    }`}
+                  >
+                    <span>{c.flag}</span>
+                    <span>{c.name}</span>
+                    <span className="text-muted-foreground ml-auto">{c.code}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             <input
               type="tel"
               placeholder="Phone Number"
               value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-              className="w-full h-14 pl-14 pr-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 15))}
+              className="w-full h-14 pl-[5.5rem] pr-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
           <div className="relative">
@@ -109,6 +151,13 @@ const SignUpPage = () => {
             className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform"
           >
             Create Account
+          </button>
+
+          <button
+            onClick={handleGuest}
+            className="w-full h-12 rounded-2xl font-medium text-muted-foreground text-base hover:text-foreground transition-colors"
+          >
+            Continue as Guest
           </button>
 
           <p className="text-center text-sm text-muted-foreground">

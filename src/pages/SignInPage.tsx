@@ -17,6 +17,11 @@ const SignInPage = () => {
     navigate('/home');
   };
 
+  const handleGuest = () => {
+    toast.success('Continuing as guest');
+    navigate('/home');
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="px-5 pt-14 pb-4">
@@ -68,6 +73,13 @@ const SignInPage = () => {
             className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform"
           >
             Sign In
+          </button>
+
+          <button
+            onClick={handleGuest}
+            className="w-full h-12 rounded-2xl font-medium text-muted-foreground text-base hover:text-foreground transition-colors"
+          >
+            Continue as Guest
           </button>
 
           <p className="text-center text-sm text-muted-foreground">
