@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Check, Calendar, Clock } from 'lucide-react';
 import { mockBarbers } from '@/data/mockData';
 import { Service } from '@/types';
+import ServiceIcon from '@/components/ServiceIcon';
 
 const BookingPage = () => {
   const { id } = useParams();
@@ -21,7 +22,6 @@ const BookingPage = () => {
 
   if (!barber) return null;
 
-  // Generate next 7 days
   const dates = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() + i);
@@ -89,9 +89,14 @@ const BookingPage = () => {
                   selectedService?.id === service.id ? 'ring-2 ring-primary' : ''
                 }`}
               >
-                <div>
-                  <p className="font-medium text-foreground">{service.name}</p>
-                  <p className="text-xs text-muted-foreground">{service.duration} min</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
+                    <ServiceIcon icon={service.icon} size={18} />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{service.name} <span className="text-xs text-muted-foreground">• {service.duration} min</span></p>
+                    {service.description && <p className="text-xs text-muted-foreground">{service.description}</p>}
+                  </div>
                 </div>
                 <span className="font-bold gold-text">₹{service.price}</span>
               </button>
@@ -175,9 +180,13 @@ const BookingPage = () => {
             <h2 className="text-lg font-semibold text-foreground mb-4">Booking Summary</h2>
             <div className="glass-card p-5 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-xl font-bold text-primary">
-                  {barber.name.charAt(0)}
-                </div>
+                {barber.photo ? (
+                  <img src={barber.photo} alt={barber.name} className="w-12 h-12 rounded-2xl object-cover" />
+                ) : (
+                  <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-xl font-bold text-primary">
+                    {barber.name.charAt(0)}
+                  </div>
+                )}
                 <div>
                   <p className="font-semibold text-foreground">{barber.name}</p>
                   <p className="text-sm text-muted-foreground">{barber.shopName}</p>
