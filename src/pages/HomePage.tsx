@@ -4,10 +4,13 @@ import { Search, MapPin, SlidersHorizontal } from 'lucide-react';
 import { mockBarbers } from '@/data/mockData';
 import BarberCard from '@/components/BarberCard';
 import AppLogo from '@/components/AppLogo';
+import FilterPanel, { FilterValues } from '@/components/FilterPanel';
+import EmptyState from '@/components/EmptyState';
 
 const HomePage = () => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   const filters = ['All', 'Nearest', 'Top Rated', 'Budget'];
 
@@ -22,6 +25,11 @@ const HomePage = () => {
       if (activeFilter === 'nearest') return parseFloat(a.distance) - parseFloat(b.distance);
       return 0;
     });
+
+  const handleApplyFilters = (filters: FilterValues) => {
+    // In a real app, these would filter the barbers
+    console.log('Filters applied:', filters);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -66,7 +74,10 @@ const HomePage = () => {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-12 pl-11 pr-12 rounded-2xl bg-secondary border-none text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
           />
-          <button className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+          <button
+            onClick={() => setShowFilters(true)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center"
+          >
             <SlidersHorizontal size={16} className="text-primary" />
           </button>
         </motion.div>
@@ -102,10 +113,16 @@ const HomePage = () => {
           <h2 className="text-lg font-semibold text-foreground">Nearby Barbers</h2>
           <span className="text-xs text-muted-foreground">{filtered.length} found</span>
         </div>
-        {filtered.map((barber, i) => (
-          <BarberCard key={barber.id} barber={barber} index={i} />
-        ))}
+        {filtered.length > 0 ? (
+          filtered.map((barber, i) => (
+            <BarberCard key={barber.id} barber={barber} index={i} />
+          ))
+        ) : (
+          <EmptyState type="no-barbers" onAction={() => setSearch('')} />
+        )}
       </div>
+
+      <FilterPanel open={showFilters} onClose={() => setShowFilters(false)} onApply={handleApplyFilters} />
     </div>
   );
 };

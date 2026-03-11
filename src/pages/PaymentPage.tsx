@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, Smartphone, CreditCard, Banknote, Wallet } from 'lucide-react';
+import { ArrowLeft, Check, Smartphone, CreditCard, Banknote, Wallet, CalendarPlus, Share2, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 
 const paymentMethods = [
@@ -28,6 +28,32 @@ const PaymentPage = () => {
     }, 1500);
   };
 
+  const handleAddToCalendar = () => {
+    if (!state) return;
+    const title = encodeURIComponent(`${state.service?.name} at ${state.barber?.shopName}`);
+    const details = encodeURIComponent(`Barber: ${state.barber?.name}\nService: ${state.service?.name}`);
+    const date = state.date || '';
+    window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`, '_blank');
+    toast.success('Opening calendar...');
+  };
+
+  const handleShare = () => {
+    if (!state) return;
+    const text = `I booked a ${state.service?.name} appointment at ${state.barber?.shopName} on ${state.date} at ${state.time}!`;
+    if (navigator.share) {
+      navigator.share({ title: 'My Booking', text });
+    } else {
+      navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard!');
+    }
+  };
+
+  const handleCall = () => {
+    if (state?.barber?.phone) {
+      window.open(`tel:${state.barber.phone}`);
+    }
+  };
+
   if (confirmed) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
@@ -51,10 +77,47 @@ const PaymentPage = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="text-muted-foreground text-center mb-8"
+          className="text-muted-foreground text-center mb-6"
         >
           Your appointment has been booked. You'll receive a confirmation shortly.
         </motion.p>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="flex gap-4 mb-8"
+        >
+          <button
+            onClick={handleAddToCalendar}
+            className="flex flex-col items-center gap-1.5"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center">
+              <CalendarPlus size={22} className="text-primary" />
+            </div>
+            <span className="text-xs text-muted-foreground">Calendar</span>
+          </button>
+          <button
+            onClick={handleShare}
+            className="flex flex-col items-center gap-1.5"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center">
+              <Share2 size={22} className="text-primary" />
+            </div>
+            <span className="text-xs text-muted-foreground">Share</span>
+          </button>
+          <button
+            onClick={handleCall}
+            className="flex flex-col items-center gap-1.5"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center">
+              <Phone size={22} className="text-primary" />
+            </div>
+            <span className="text-xs text-muted-foreground">Call</span>
+          </button>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

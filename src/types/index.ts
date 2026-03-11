@@ -11,16 +11,21 @@ export interface Barber {
   portfolio: string[];
   availability: TimeSlot[];
   location: string;
+  address: string;
   phone: string;
   about: string;
+  isOpen: boolean;
+  nextSlot?: string;
+  gallery: string[];
 }
 
 export interface Service {
   id: string;
   name: string;
   price: number;
-  duration: number; // minutes
+  duration: number;
   description?: string;
+  icon?: string;
 }
 
 export interface TimeSlot {

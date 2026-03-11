@@ -1,11 +1,42 @@
-import { useState } from 'react';
-import { Search, SlidersHorizontal, Star, MapPin } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { Search, Clock, TrendingUp, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { mockBarbers } from '@/data/mockData';
 import BarberCard from '@/components/BarberCard';
+import EmptyState from '@/components/EmptyState';
+import { useNavigate } from 'react-router-dom';
+
+const RECENT_KEY = 'bmb_recent_searches';
+
+const suggestedBarbers = mockBarbers.slice(0, 3);
+const suggestedSalons = ['Royal Cuts Studio', 'Blade & Fade', 'The Gentleman\'s Den'];
 
 const SearchPage = () => {
   const [search, setSearch] = useState('');
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const stored = localStorage.getItem(RECENT_KEY);
+    if (stored) setRecentSearches(JSON.parse(stored));
+  }, []);
+
+  const addRecent = (term: string) => {
+    const updated = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5);
+    setRecentSearches(updated);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+  };
+
+  const removeRecent = (term: string) => {
+    const updated = recentSearches.filter(s => s !== term);
+    setRecentSearches(updated);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+  };
+
+  const handleSearch = (term: string) => {
+    setSearch(term);
+    if (term.trim()) addRecent(term.trim());
+  };
 
   const filtered = mockBarbers.filter(b =>
     b.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -24,25 +55,98 @@ const SearchPage = () => {
             placeholder="Search barbers, shops, locations..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch(search)}
             autoFocus
             className="w-full h-12 pl-11 pr-4 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2">
+              <X size={16} className="text-muted-foreground" />
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="px-5 space-y-3">
+      <div className="px-5">
         {search ? (
-          filtered.length > 0 ? (
-            filtered.map((b, i) => <BarberCard key={b.id} barber={b} index={i} />)
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground">No barbers found</p>
-            </div>
-          )
+          <div className="space-y-3">
+            {filtered.length > 0 ? (
+              filtered.map((b, i) => <BarberCard key={b.id} barber={b} index={i} />)
+            ) : (
+              <EmptyState type="no-results" />
+            )}
+          </div>
         ) : (
-          <div className="text-center py-16">
-            <Search size={48} className="text-muted-foreground/20 mx-auto mb-4" />
-            <p className="text-muted-foreground">Search for barbers or shops</p>
+          <div className="space-y-6">
+            {/* Recent Searches */}
+            {recentSearches.length > 0 && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Clock size={14} /> Recent Searches
+                </h3>
+                <div className="space-y-1">
+                  {recentSearches.map((term) => (
+                    <div key={term} className="flex items-center justify-between py-2.5">
+                      <button
+                        onClick={() => handleSearch(term)}
+                        className="text-foreground text-sm flex-1 text-left"
+                      >
+                        {term}
+                      </button>
+                      <button onClick={() => removeRecent(term)} className="p-1">
+                        <X size={14} className="text-muted-foreground" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Suggested Barbers */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                <TrendingUp size={14} /> Popular Barbers
+              </h3>
+              <div className="space-y-2">
+                {suggestedBarbers.map((b) => (
+                  <button
+                    key={b.id}
+                    onClick={() => navigate(`/barber/${b.id}`)}
+                    className="flex items-center gap-3 w-full py-2.5"
+                  >
+                    {b.photo ? (
+                      <img src={b.photo} alt={b.name} className="w-10 h-10 rounded-xl object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-sm font-bold text-primary">
+                        {b.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-foreground">{b.name}</p>
+                      <p className="text-xs text-muted-foreground">{b.shopName}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Suggested Salons */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                Suggested Salons
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {suggestedSalons.map((name) => (
+                  <button
+                    key={name}
+                    onClick={() => handleSearch(name)}
+                    className="px-4 py-2 rounded-full bg-secondary text-sm text-foreground"
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
           </div>
         )}
       </div>
