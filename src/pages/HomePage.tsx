@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Search, MapPin, SlidersHorizontal } from 'lucide-react';
 import { mockBarbers } from '@/data/mockData';
 import BarberCard from '@/components/BarberCard';
+import AppLogo from '@/components/AppLogo';
 
 const HomePage = () => {
   const [search, setSearch] = useState('');
