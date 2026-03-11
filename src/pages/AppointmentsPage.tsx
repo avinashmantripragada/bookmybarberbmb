@@ -81,7 +81,7 @@ const AppointmentsPage = () => {
             );
           })
         ) : (
-          <EmptyState type="no-bookings" onAction={() => navigate('/')} />
+          <EmptyState type="no-bookings" onAction={() => navigate('/home')} />
         )}
       </div>
     </div>

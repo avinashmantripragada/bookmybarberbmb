@@ -15,7 +15,7 @@ const LoginPage = () => {
     if (!phone || phone.length < 10) { toast.error('Enter a valid phone number'); return; }
     if (!isLogin && !name) { toast.error('Enter your name'); return; }
     toast.success(isLogin ? 'Welcome back!' : 'Account created!');
-    navigate('/');
+    navigate('/home');
   };
 
   return (
