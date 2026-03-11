@@ -14,7 +14,7 @@ const BottomNav = () => {
 
   // Hide on certain pages
   const hiddenPaths = ['/login', '/signin', '/signup', '/verify', '/forgot-password', '/welcome', '/booking/', '/payment/', '/barber-onboarding'];
-  if (hiddenPaths.some(p => location.pathname.startsWith(p))) return null;
+  if (location.pathname === '/' || hiddenPaths.some(p => location.pathname.startsWith(p))) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-xl border-t border-border/50 safe-bottom">
