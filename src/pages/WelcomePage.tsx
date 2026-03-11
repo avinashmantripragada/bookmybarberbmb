@@ -1,9 +1,15 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import AppLogo from '@/components/AppLogo';
+import { toast } from 'sonner';
 
 const WelcomePage = () => {
   const navigate = useNavigate();
+
+  const handleGuest = () => {
+    toast.success('Continuing as guest');
+    navigate('/home');
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-8">
@@ -52,13 +58,19 @@ const WelcomePage = () => {
         >
           Continue as Barber
         </button>
+        <button
+          onClick={handleGuest}
+          className="w-full h-12 rounded-2xl font-medium text-muted-foreground text-base hover:text-foreground transition-colors"
+        >
+          Continue as Guest
+        </button>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.9 }}
-        className="mt-8 flex items-center gap-4 text-sm"
+        className="mt-6 flex items-center gap-4 text-sm"
       >
         <button onClick={() => navigate('/signin')} className="text-primary font-medium">
           Sign In
