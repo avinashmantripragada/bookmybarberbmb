@@ -13,7 +13,7 @@ const BottomNav = () => {
   const location = useLocation();
 
   // Hide on certain pages
-  const hiddenPaths = ['/login', '/signin', '/signup', '/verify', '/forgot-password', '/welcome', '/booking/', '/payment/', '/barber-onboarding'];
+  const hiddenPaths = ['/login', '/signin', '/signup', '/verify', '/forgot-password', '/welcome', '/booking/', '/payment/', '/barber-onboarding', '/shop-onboarding', '/admin'];
   if (location.pathname === '/' || hiddenPaths.some(p => location.pathname.startsWith(p))) return null;
 
   return (
