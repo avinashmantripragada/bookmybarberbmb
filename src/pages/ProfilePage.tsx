@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { User, Bell, Shield, LogOut, ChevronRight, Scissors, CreditCard, Calendar, Camera, Edit2 } from 'lucide-react';
+import { User, Bell, Shield, LogOut, ChevronRight, Scissors, CreditCard, Calendar, Camera, Edit2, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ProfilePage = () => {
@@ -18,6 +18,7 @@ const ProfilePage = () => {
     { icon: Scissors, label: 'Barber Dashboard', action: () => navigate('/dashboard') },
     { icon: Bell, label: 'Notifications', action: () => toast.info('Coming soon') },
     { icon: Shield, label: 'Privacy & Security', action: () => toast.info('Coming soon') },
+    { icon: HelpCircle, label: 'Help & Support', action: () => navigate('/help-support') },
   ];
 
   return (

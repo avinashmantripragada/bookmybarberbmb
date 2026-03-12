@@ -26,6 +26,10 @@ import ShopPage from "./pages/ShopPage";
 import ShopOwnerDashboard from "./pages/ShopOwnerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import SearchPage from "./pages/SearchPage";
+import HelpSupportPage from "./pages/HelpSupportPage";
+import FAQsPage from "./pages/FAQsPage";
+import ContactSupportPage from "./pages/ContactSupportPage";
+import ReportProblemPage from "./pages/ReportProblemPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -66,6 +70,10 @@ const App = () => {
               <Route path="/shop-onboarding" element={<ShopOnboardingPage />} />
               <Route path="/shop-dashboard" element={<ShopOwnerDashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/help-support" element={<HelpSupportPage />} />
+              <Route path="/faqs" element={<FAQsPage />} />
+              <Route path="/contact-support" element={<ContactSupportPage />} />
+              <Route path="/report-problem" element={<ReportProblemPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <BottomNav />
