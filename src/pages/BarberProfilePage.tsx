@@ -51,7 +51,10 @@ const BarberProfilePage = () => {
         className="px-5 pt-16"
       >
         <h1 className="text-2xl font-bold text-foreground">{barber.name}</h1>
-        <p className="text-muted-foreground">{barber.shopName}</p>
+        <div className="flex items-center gap-2 mt-1">
+          <p className="text-muted-foreground">{barber.type === 'independent' ? 'Independent Barber' : barber.shopName}</p>
+          {barber.experience && <span className="text-xs text-primary font-medium">• {barber.experience} yrs exp</span>}
+        </div>
         <div className="flex items-center gap-4 mt-3">
           <div className="flex items-center gap-1">
             <Star size={16} className="fill-primary text-primary" />
