@@ -7,12 +7,15 @@ import ShopCard from '@/components/ShopCard';
 import AppLogo from '@/components/AppLogo';
 import FilterPanel, { FilterValues } from '@/components/FilterPanel';
 import EmptyState from '@/components/EmptyState';
+import NotificationBell from '@/components/NotificationBell';
+import { useAuth } from '@/contexts/AuthContext';
 
 const HomePage = () => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'all' | 'barbers' | 'shops'>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const { user } = useAuth();
 
   const { data: barbers = [], isLoading: loadingBarbers } = useBarbers();
   const { data: shops = [], isLoading: loadingShops } = useShops();
@@ -53,8 +56,11 @@ const HomePage = () => {
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1"><MapPin size={10} /> Bangalore, Karnataka</p>
               </div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-              <MapPin size={18} className="text-primary" />
+            <div className="flex items-center gap-2">
+              {user && <NotificationBell />}
+              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                <MapPin size={18} className="text-primary" />
+              </div>
             </div>
           </div>
         </motion.div>

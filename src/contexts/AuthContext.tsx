@@ -15,12 +15,14 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
-  role: string | null;
+  roles: string[];
+  activeRole: string | null;
   loading: boolean;
   signUp: (email: string, password: string, name: string, phone: string, role: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  switchRole: (role: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,7 +37,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
+  const [activeRole, setActiveRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
@@ -50,10 +53,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: roleData } = await supabase
       .from('user_roles')
       .select('role')
-      .eq('user_id', userId)
-      .single();
+      .eq('user_id', userId);
 
-    if (roleData) setRole(roleData.role);
+    if (roleData && roleData.length > 0) {
+      const userRoles = roleData.map(r => r.role as string);
+      setRoles(userRoles);
+      // Restore saved active role or default to first
+      const saved = localStorage.getItem(`bmb_active_role_${userId}`);
+      if (saved && userRoles.includes(saved)) {
+        setActiveRole(saved);
+      } else {
+        setActiveRole(userRoles[0]);
+      }
+    }
   };
 
   const ensureProfile = async (currentUser: User) => {
@@ -81,6 +93,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await fetchProfile(currentUser.id);
   };
 
+  const switchRole = (role: string) => {
+    if (roles.includes(role)) {
+      setActiveRole(role);
+      if (user) {
+        localStorage.setItem(`bmb_active_role_${user.id}`, role);
+      }
+    }
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
@@ -91,7 +112,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setTimeout(() => ensureProfile(newSession.user), 0);
         } else {
           setProfile(null);
-          setRole(null);
+          setRoles([]);
+          setActiveRole(null);
         }
         setLoading(false);
       }
@@ -131,15 +153,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setSession(null);
     setProfile(null);
-    setRole(null);
+    setRoles([]);
+    setActiveRole(null);
   };
 
   const refreshProfile = async () => {
     if (user) await fetchProfile(user.id);
   };
 
+  // Keep backward compat: expose `role` as `activeRole`
   return (
-    <AuthContext.Provider value={{ user, session, profile, role, loading, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, roles, activeRole, loading, signUp, signIn, signOut, refreshProfile, switchRole }}>
       {children}
     </AuthContext.Provider>
   );

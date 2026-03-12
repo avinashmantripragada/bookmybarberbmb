@@ -13,6 +13,16 @@ const SignInPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const getRoleRedirect = (roles: string[], activeRole: string | null) => {
+    const role = activeRole || roles[0] || 'customer';
+    switch (role) {
+      case 'barber': return '/dashboard';
+      case 'shop_owner': return '/shop-dashboard';
+      case 'admin': return '/admin';
+      default: return '/home';
+    }
+  };
+
   const handleSubmit = async () => {
     if (!email.trim()) { toast.error('Enter your email'); return; }
     if (!password) { toast.error('Enter your password'); return; }
@@ -27,7 +37,10 @@ const SignInPage = () => {
     }
 
     toast.success('Welcome back!');
-    navigate('/home');
+    // Small delay to let auth context populate roles
+    setTimeout(() => {
+      navigate('/home');
+    }, 100);
   };
 
   const handleGuest = () => {
