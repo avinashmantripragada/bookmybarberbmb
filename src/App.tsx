@@ -14,6 +14,7 @@ import SignUpPage from "./pages/SignUpPage";
 import SignInPage from "./pages/SignInPage";
 import VerifyPage from "./pages/VerifyPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import BarberProfilePage from "./pages/BarberProfilePage";
 import BookingPage from "./pages/BookingPage";
 import PaymentPage from "./pages/PaymentPage";
@@ -58,6 +59,7 @@ const App = () => {
                 <Route path="/signin" element={<SignInPage />} />
                 <Route path="/verify" element={<VerifyPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/login" element={<SignInPage />} />
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/barber/:id" element={<BarberProfilePage />} />
