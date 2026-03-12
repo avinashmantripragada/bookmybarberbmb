@@ -26,6 +26,10 @@ import ShopPage from "./pages/ShopPage";
 import ShopOwnerDashboard from "./pages/ShopOwnerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import SearchPage from "./pages/SearchPage";
+import HelpSupportPage from "./pages/HelpSupportPage";
+import FAQsPage from "./pages/FAQsPage";
+import ContactSupportPage from "./pages/ContactSupportPage";
+import ReportProblemPage from "./pages/ReportProblemPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
