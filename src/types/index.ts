@@ -2,6 +2,7 @@ export interface Barber {
   id: string;
   name: string;
   shopName: string;
+  shopId?: string;
   photo: string;
   rating: number;
   reviewCount: number;
@@ -17,6 +18,31 @@ export interface Barber {
   isOpen: boolean;
   nextSlot?: string;
   gallery: string[];
+  type: 'independent' | 'shop-employed';
+  experience?: number;
+  bio?: string;
+}
+
+export interface Shop {
+  id: string;
+  name: string;
+  ownerId: string;
+  description: string;
+  photo: string;
+  rating: number;
+  reviewCount: number;
+  distance: string;
+  location: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  phone: string;
+  isOpen: boolean;
+  openingHours: string;
+  gallery: string[];
+  barbers: Barber[];
+  services: Service[];
 }
 
 export interface Service {

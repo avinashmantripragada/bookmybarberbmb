@@ -21,6 +21,10 @@ import ReviewPage from "./pages/ReviewPage";
 import ProfilePage from "./pages/ProfilePage";
 import BarberDashboard from "./pages/BarberDashboard";
 import BarberOnboardingPage from "./pages/BarberOnboardingPage";
+import ShopOnboardingPage from "./pages/ShopOnboardingPage";
+import ShopPage from "./pages/ShopPage";
+import ShopOwnerDashboard from "./pages/ShopOwnerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import SearchPage from "./pages/SearchPage";
 import NotFound from "./pages/NotFound";
 
@@ -51,6 +55,7 @@ const App = () => {
               <Route path="/login" element={<SignInPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/barber/:id" element={<BarberProfilePage />} />
+              <Route path="/shop/:id" element={<ShopPage />} />
               <Route path="/booking/:id" element={<BookingPage />} />
               <Route path="/payment/:id" element={<PaymentPage />} />
               <Route path="/appointments" element={<AppointmentsPage />} />
@@ -58,6 +63,9 @@ const App = () => {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/dashboard" element={<BarberDashboard />} />
               <Route path="/barber-onboarding" element={<BarberOnboardingPage />} />
+              <Route path="/shop-onboarding" element={<ShopOnboardingPage />} />
+              <Route path="/shop-dashboard" element={<ShopOwnerDashboard />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <BottomNav />
