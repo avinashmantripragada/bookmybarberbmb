@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, MapPin, SlidersHorizontal, Store } from 'lucide-react';
-import { mockBarbers, mockShops } from '@/data/mockData';
+import { Search, MapPin, SlidersHorizontal, Store, Loader2 } from 'lucide-react';
+import { useBarbers, useShops } from '@/hooks/useData';
 import BarberCard from '@/components/BarberCard';
 import ShopCard from '@/components/ShopCard';
 import AppLogo from '@/components/AppLogo';
@@ -14,9 +14,12 @@ const HomePage = () => {
   const [viewMode, setViewMode] = useState<'all' | 'barbers' | 'shops'>('all');
   const [showFilters, setShowFilters] = useState(false);
 
-  const filters = ['All', 'Nearest', 'Top Rated', 'Budget'];
+  const { data: barbers = [], isLoading: loadingBarbers } = useBarbers();
+  const { data: shops = [], isLoading: loadingShops } = useShops();
 
-  const filteredBarbers = mockBarbers
+  const filters = ['All', 'Top Rated', 'Budget'];
+
+  const filteredBarbers = barbers
     .filter(b =>
       b.name.toLowerCase().includes(search.toLowerCase()) ||
       b.shopName.toLowerCase().includes(search.toLowerCase())
@@ -24,11 +27,10 @@ const HomePage = () => {
     .sort((a, b) => {
       if (activeFilter === 'top rated') return b.rating - a.rating;
       if (activeFilter === 'budget') return a.startingPrice - b.startingPrice;
-      if (activeFilter === 'nearest') return parseFloat(a.distance) - parseFloat(b.distance);
       return 0;
     });
 
-  const filteredShops = mockShops.filter(s =>
+  const filteredShops = shops.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
     s.location.toLowerCase().includes(search.toLowerCase())
   );
@@ -37,9 +39,10 @@ const HomePage = () => {
     console.log('Filters applied:', filters);
   };
 
+  const isLoading = loadingBarbers || loadingShops;
+
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
       <div className="px-5 pt-14 pb-4">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <div className="flex items-center justify-between mb-1">
@@ -47,9 +50,7 @@ const HomePage = () => {
               <AppLogo size="sm" />
               <div>
                 <h1 className="text-lg font-bold gold-text leading-tight">BookMyBarber</h1>
-                <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <MapPin size={10} /> Bangalore, Karnataka
-                </p>
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1"><MapPin size={10} /> Bangalore, Karnataka</p>
               </div>
             </div>
             <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
@@ -59,7 +60,6 @@ const HomePage = () => {
         </motion.div>
       </div>
 
-      {/* Search */}
       <div className="px-5 mb-4">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4 }} className="relative">
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -72,7 +72,6 @@ const HomePage = () => {
         </motion.div>
       </div>
 
-      {/* View Mode Toggle */}
       <div className="px-5 mb-4">
         <div className="flex bg-secondary rounded-2xl p-1">
           {(['all', 'barbers', 'shops'] as const).map(mode => (
@@ -84,7 +83,6 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="px-5 mb-6">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.4 }} className="flex gap-2 overflow-x-auto hide-scrollbar">
           {filters.map((filter) => (
@@ -96,47 +94,41 @@ const HomePage = () => {
         </motion.div>
       </div>
 
-      <div className="px-5 space-y-6">
-        {/* Shops Section */}
-        {(viewMode === 'all' || viewMode === 'shops') && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <Store size={18} className="text-primary" /> Shops
-              </h2>
-              <span className="text-xs text-muted-foreground">{filteredShops.length} found</span>
-            </div>
-            {filteredShops.length > 0 ? (
-              <div className="space-y-3">
-                {filteredShops.map((shop, i) => (
-                  <ShopCard key={shop.id} shop={shop} index={i} />
-                ))}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 size={32} className="animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="px-5 space-y-6">
+          {(viewMode === 'all' || viewMode === 'shops') && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-foreground flex items-center gap-2"><Store size={18} className="text-primary" /> Shops</h2>
+                <span className="text-xs text-muted-foreground">{filteredShops.length} found</span>
               </div>
-            ) : (
-              <EmptyState type="no-barbers" onAction={() => setSearch('')} />
-            )}
-          </div>
-        )}
+              {filteredShops.length > 0 ? (
+                <div className="space-y-3">{filteredShops.map((shop, i) => <ShopCard key={shop.id} shop={shop} index={i} />)}</div>
+              ) : (
+                <EmptyState type="no-barbers" onAction={() => setSearch('')} />
+              )}
+            </div>
+          )}
 
-        {/* Barbers Section */}
-        {(viewMode === 'all' || viewMode === 'barbers') && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-foreground">Barbers</h2>
-              <span className="text-xs text-muted-foreground">{filteredBarbers.length} found</span>
-            </div>
-            {filteredBarbers.length > 0 ? (
-              <div className="space-y-3">
-                {filteredBarbers.map((barber, i) => (
-                  <BarberCard key={barber.id} barber={barber} index={i} />
-                ))}
+          {(viewMode === 'all' || viewMode === 'barbers') && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-foreground">Barbers</h2>
+                <span className="text-xs text-muted-foreground">{filteredBarbers.length} found</span>
               </div>
-            ) : (
-              <EmptyState type="no-barbers" onAction={() => setSearch('')} />
-            )}
-          </div>
-        )}
-      </div>
+              {filteredBarbers.length > 0 ? (
+                <div className="space-y-3">{filteredBarbers.map((barber, i) => <BarberCard key={barber.id} barber={barber} index={i} />)}</div>
+              ) : (
+                <EmptyState type="no-barbers" onAction={() => setSearch('')} />
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <FilterPanel open={showFilters} onClose={() => setShowFilters(false)} onApply={handleApplyFilters} />
     </div>

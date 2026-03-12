@@ -1,18 +1,31 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SignInPage = () => {
   const navigate = useNavigate();
-  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const { signIn } = useAuth();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    if (!emailOrPhone.trim()) { toast.error('Enter email or phone number'); return; }
+  const handleSubmit = async () => {
+    if (!email.trim()) { toast.error('Enter your email'); return; }
     if (!password) { toast.error('Enter your password'); return; }
+
+    setSubmitting(true);
+    const { error } = await signIn(email, password);
+    setSubmitting(false);
+
+    if (error) {
+      toast.error(error.message || 'Login failed');
+      return;
+    }
+
     toast.success('Welcome back!');
     navigate('/home');
   };
@@ -36,58 +49,28 @@ const SignInPage = () => {
           <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="space-y-4"
-        >
-          <input
-            type="text"
-            placeholder="Email or Phone Number"
-            value={emailOrPhone}
-            onChange={(e) => setEmailOrPhone(e.target.value)}
-            className="w-full h-14 px-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
+          <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)}
+            className="w-full h-14 px-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
           <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-14 px-5 pr-14 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
+            <input type={showPassword ? 'text' : 'password'} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
+              className="w-full h-14 px-5 pr-14 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
             <button onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground">
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
 
           <div className="text-right">
-            <button onClick={() => navigate('/forgot-password')} className="text-sm text-primary font-medium">
-              Forgot Password?
-            </button>
+            <button onClick={() => navigate('/forgot-password')} className="text-sm text-primary font-medium">Forgot Password?</button>
           </div>
 
-          <button
-            onClick={handleSubmit}
-            className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform"
-          >
-            Sign In
+          <button onClick={handleSubmit} disabled={submitting}
+            className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform disabled:opacity-60 flex items-center justify-center gap-2">
+            {submitting ? <><Loader2 size={20} className="animate-spin" /> Signing in...</> : 'Sign In'}
           </button>
 
-          <button
-            onClick={handleGuest}
-            className="w-full h-12 rounded-2xl font-medium text-muted-foreground text-base hover:text-foreground transition-colors"
-          >
-            Continue as Guest
-          </button>
-
-          <p className="text-center text-sm text-muted-foreground">
-            Don't have an account?{' '}
-            <button onClick={() => navigate('/signup')} className="text-primary font-medium">
-              Sign Up
-            </button>
-          </p>
+          <button onClick={handleGuest} className="w-full h-12 rounded-2xl font-medium text-muted-foreground text-base hover:text-foreground transition-colors">Continue as Guest</button>
+          <p className="text-center text-sm text-muted-foreground">Don't have an account?{' '}<button onClick={() => navigate('/signup')} className="text-primary font-medium">Sign Up</button></p>
         </motion.div>
       </div>
     </div>
