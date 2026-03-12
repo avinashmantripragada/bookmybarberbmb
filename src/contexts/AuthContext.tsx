@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .eq('user_id', userId);
 
     if (roleData && roleData.length > 0) {
-      const userRoles = roleData.map(r => r.role);
+      const userRoles = roleData.map(r => r.role as string);
       setRoles(userRoles);
       // Restore saved active role or default to first
       const saved = localStorage.getItem(`bmb_active_role_${userId}`);
