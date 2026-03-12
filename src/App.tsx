@@ -70,6 +70,10 @@ const App = () => {
               <Route path="/shop-onboarding" element={<ShopOnboardingPage />} />
               <Route path="/shop-dashboard" element={<ShopOwnerDashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/help-support" element={<HelpSupportPage />} />
+              <Route path="/faqs" element={<FAQsPage />} />
+              <Route path="/contact-support" element={<ContactSupportPage />} />
+              <Route path="/report-problem" element={<ReportProblemPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <BottomNav />
