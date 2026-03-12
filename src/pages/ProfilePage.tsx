@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { User, Bell, Shield, LogOut, ChevronRight, Scissors, CreditCard, Calendar, Camera, Edit2 } from 'lucide-react';
+import { User, Bell, Shield, LogOut, ChevronRight, Scissors, CreditCard, Calendar, Camera, Edit2, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ProfilePage = () => {
