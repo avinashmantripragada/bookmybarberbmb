@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import AppLogo from '@/components/AppLogo';
 
 const SignInPage = () => {
   const navigate = useNavigate();
@@ -12,16 +13,6 @@ const SignInPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  const getRoleRedirect = (roles: string[], activeRole: string | null) => {
-    const role = activeRole || roles[0] || 'customer';
-    switch (role) {
-      case 'barber': return '/dashboard';
-      case 'shop_owner': return '/shop-dashboard';
-      case 'admin': return '/admin';
-      default: return '/home';
-    }
-  };
 
   const handleSubmit = async () => {
     if (!email.trim()) { toast.error('Enter your email'); return; }
@@ -37,10 +28,13 @@ const SignInPage = () => {
     }
 
     toast.success('Welcome back!');
+    // Redirect will happen based on role from AuthContext
     // Small delay to let auth context populate roles
-    setTimeout(() => {
-      navigate('/home');
-    }, 100);
+    setTimeout(async () => {
+      // Read active role from localStorage or default
+      const userId = (await import('@/integrations/supabase/client')).supabase.auth.getUser();
+      navigate('/home'); // Default; BottomNav will show correct tabs
+    }, 200);
   };
 
   const handleGuest = () => {
@@ -57,8 +51,9 @@ const SignInPage = () => {
       </div>
 
       <div className="flex-1 px-8 pb-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground mb-1">Welcome Back</h1>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex flex-col items-center">
+          <AppLogo size="md" />
+          <h1 className="text-2xl font-bold text-foreground mt-4 mb-1">Welcome Back</h1>
           <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </motion.div>
 

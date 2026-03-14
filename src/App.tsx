@@ -28,6 +28,7 @@ import ShopPage from "./pages/ShopPage";
 import ShopOwnerDashboard from "./pages/ShopOwnerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import SearchPage from "./pages/SearchPage";
+import ManageProfilePage from "./pages/ManageProfilePage";
 import HelpSupportPage from "./pages/HelpSupportPage";
 import FAQsPage from "./pages/FAQsPage";
 import ContactSupportPage from "./pages/ContactSupportPage";
@@ -69,6 +70,7 @@ const App = () => {
                 <Route path="/appointments" element={<AppointmentsPage />} />
                 <Route path="/review" element={<ReviewPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/manage-profile" element={<ManageProfilePage />} />
                 <Route path="/dashboard" element={<BarberDashboard />} />
                 <Route path="/barber-onboarding" element={<BarberOnboardingPage />} />
                 <Route path="/shop-onboarding" element={<ShopOnboardingPage />} />

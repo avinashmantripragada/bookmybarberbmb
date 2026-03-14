@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scissors } from 'lucide-react';
+import bmbLogo from '@/assets/bmb-logo.png';
 
 interface SplashScreenProps {
   show: boolean;
@@ -14,21 +14,14 @@ const SplashScreen = ({ show }: SplashScreenProps) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          {/* Logo icon */}
           <motion.div
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{
-              duration: 1.2,
-              ease: [0.25, 0.1, 0.25, 1],
-            }}
+            transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
             className="relative"
           >
-            <div className="w-24 h-24 rounded-3xl bg-secondary flex items-center justify-center shadow-[0_0_60px_rgba(210,160,60,0.15)]">
-              <Scissors size={44} className="text-primary" strokeWidth={2} />
-            </div>
+            <img src={bmbLogo} alt="BookMyBarber" className="w-28 h-28 rounded-3xl object-cover shadow-[0_0_60px_rgba(210,160,60,0.15)]" />
 
-            {/* Glow ring */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: [0, 0.4, 0], scale: [0.8, 1.4, 1.6] }}
@@ -37,7 +30,6 @@ const SplashScreen = ({ show }: SplashScreenProps) => {
             />
           </motion.div>
 
-          {/* Brand name */}
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -47,7 +39,6 @@ const SplashScreen = ({ show }: SplashScreenProps) => {
             BookMyBarber
           </motion.h1>
 
-          {/* Tagline */}
           <motion.p
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}

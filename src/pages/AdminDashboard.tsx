@@ -1,9 +1,13 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Store, Calendar, DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
+import { Users, Store, Calendar, DollarSign, TrendingUp, BarChart3, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AppLogo from '@/components/AppLogo';
+import NotificationBell from '@/components/NotificationBell';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const stats = [
     { label: 'Total Users', value: '2,847', icon: Users, sub: '+124 this week', color: 'text-blue-400' },
@@ -28,20 +32,24 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {/* Header - No back button */}
       <div className="flex items-center justify-between px-5 pt-14 pb-4">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-            <ArrowLeft size={20} className="text-foreground" />
-          </button>
+          <AppLogo size="sm" />
           <div>
             <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
             <p className="text-xs text-muted-foreground">BookMyBarber Platform</p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          {user && <NotificationBell />}
+          <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+            <Settings size={18} className="text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       <div className="px-5 space-y-6">
-        {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
           {stats.map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.06 }} className="glass-card p-4">
@@ -53,7 +61,6 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Top Shops */}
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
             <TrendingUp size={18} className="text-primary" /> Top Shops
@@ -75,7 +82,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Recent Activity */}
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
             <BarChart3 size={18} className="text-primary" /> Recent Activity

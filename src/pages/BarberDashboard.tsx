@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Clock, Users, TrendingUp, Settings, Plus, Edit2, Star, DollarSign, BarChart3, Check, X, MessageSquare, Image, CalendarClock } from 'lucide-react';
+import { Calendar, Clock, Users, TrendingUp, Settings, Plus, Edit2, Star, DollarSign, BarChart3, Check, X, MessageSquare, Image, CalendarClock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AppLogo from '@/components/AppLogo';
+import NotificationBell from '@/components/NotificationBell';
+import { useAuth } from '@/contexts/AuthContext';
 
 type DashboardTab = 'overview' | 'appointments' | 'services' | 'earnings' | 'reviews' | 'availability';
 
 const BarberDashboard = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
   const [appointmentFilter, setAppointmentFilter] = useState<'today' | 'upcoming' | 'history'>('today');
 
@@ -60,20 +64,21 @@ const BarberDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
+      {/* Header - No back button */}
       <div className="flex items-center justify-between px-5 pt-14 pb-4">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-            <ArrowLeft size={20} className="text-foreground" />
-          </button>
+          <AppLogo size="sm" />
           <div>
             <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-xs text-muted-foreground">Royal Cuts Studio</p>
+            <p className="text-xs text-muted-foreground">{profile?.name || 'Barber'}</p>
           </div>
         </div>
-        <button onClick={() => navigate('/barber-settings')} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-          <Settings size={18} className="text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-2">
+          {user && <NotificationBell />}
+          <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+            <Settings size={18} className="text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       {/* Tab Bar */}
