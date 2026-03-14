@@ -28,6 +28,7 @@ import ShopPage from "./pages/ShopPage";
 import ShopOwnerDashboard from "./pages/ShopOwnerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import SearchPage from "./pages/SearchPage";
+import ManageProfilePage from "./pages/ManageProfilePage";
 import HelpSupportPage from "./pages/HelpSupportPage";
 import FAQsPage from "./pages/FAQsPage";
 import ContactSupportPage from "./pages/ContactSupportPage";
