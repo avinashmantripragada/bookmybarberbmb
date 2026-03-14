@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Users, TrendingUp, Settings, Plus, Edit2, Star, DollarSign, BarChart3, Check, X, Store } from 'lucide-react';
+import { Calendar, Users, Settings, Plus, Edit2, Star, DollarSign, BarChart3, Check, X, Store } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AppLogo from '@/components/AppLogo';
+import NotificationBell from '@/components/NotificationBell';
+import { useAuth } from '@/contexts/AuthContext';
 
 type Tab = 'overview' | 'barbers' | 'services' | 'bookings' | 'earnings';
 
 const ShopOwnerDashboard = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
 
   const stats = [
@@ -50,17 +54,18 @@ const ShopOwnerDashboard = () => {
     <div className="min-h-screen bg-background pb-24">
       <div className="flex items-center justify-between px-5 pt-14 pb-4">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-            <ArrowLeft size={20} className="text-foreground" />
-          </button>
+          <AppLogo size="sm" />
           <div>
             <h1 className="text-xl font-bold text-foreground">Shop Dashboard</h1>
-            <p className="text-xs text-muted-foreground flex items-center gap-1"><Store size={12} /> Royal Cuts Studio</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><Store size={12} /> {profile?.name || 'Shop Owner'}</p>
           </div>
         </div>
-        <button className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-          <Settings size={18} className="text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-2">
+          {user && <NotificationBell />}
+          <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+            <Settings size={18} className="text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       <div className="px-5 mb-4">

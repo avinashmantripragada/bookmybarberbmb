@@ -1,75 +1,61 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { User, Bell, Shield, LogOut, ChevronRight, Scissors, CreditCard, Calendar, Camera, HelpCircle, Store, Loader2, RefreshCw, Lock, Mail, Phone, ArrowRightLeft } from 'lucide-react';
+import { User, Bell, LogOut, ChevronRight, CreditCard, Calendar, Camera, HelpCircle, Loader2, ArrowRightLeft, Settings, Scissors, Store } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import AppLogo from '@/components/AppLogo';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, profile, roles, activeRole, signOut, loading, refreshProfile, switchRole } = useAuth();
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [saving, setSaving] = useState(false);
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
-  const [showPasswordChange, setShowPasswordChange] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [changingPassword, setChangingPassword] = useState(false);
 
   const displayName = profile?.name || user?.user_metadata?.name || 'Guest';
   const displayEmail = profile?.email || user?.email || '';
   const displayPhone = profile?.phone || '';
 
-  const startEditing = () => {
-    setName(displayName);
-    setEmail(displayEmail);
-    setPhone(displayPhone);
-    setEditing(true);
-  };
-
-  const handleSave = async () => {
-    if (!user) return;
-    setSaving(true);
-    const { error } = await supabase.from('profiles').update({ name, phone, email }).eq('user_id', user.id);
-    setSaving(false);
-    if (error) { toast.error('Failed to update profile'); return; }
-    toast.success('Profile updated!');
-    setEditing(false);
-    refreshProfile();
-  };
-
-  const handleChangePassword = async () => {
-    if (!newPassword || newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
+  const handleSwitchRole = async (role: string) => {
+    // Check if user has the necessary profile for this role
+    if (role === 'barber') {
+      const { data } = await supabase.from('barbers').select('id').eq('user_id', user?.id).single();
+      if (!data) {
+        setShowRoleSwitcher(false);
+        toast.info('Complete your barber profile first');
+        navigate('/barber-onboarding');
+        return;
+      }
     }
-    setChangingPassword(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setChangingPassword(false);
-    if (error) {
-      toast.error(error.message || 'Failed to change password');
-      return;
+    if (role === 'shop_owner') {
+      const { data } = await supabase.from('shops').select('id').eq('owner_id', user?.id).single();
+      if (!data) {
+        setShowRoleSwitcher(false);
+        toast.info('Complete your shop setup first');
+        navigate('/shop-onboarding');
+        return;
+      }
     }
-    toast.success('Password changed successfully!');
-    setShowPasswordChange(false);
-    setNewPassword('');
-    setCurrentPassword('');
-  };
 
-  const handleSwitchRole = (role: string) => {
+    // If user doesn't have the role yet, add it
+    if (!roles.includes(role)) {
+      await supabase.from('user_roles').insert({ user_id: user!.id, role: role as any });
+      await refreshProfile();
+    }
+
     switchRole(role);
     setShowRoleSwitcher(false);
     toast.success(`Switched to ${role.replace('_', ' ')} mode`);
 
-    // Redirect to appropriate dashboard
     if (role === 'customer') navigate('/home');
     else if (role === 'barber') navigate('/dashboard');
     else if (role === 'shop_owner') navigate('/shop-dashboard');
     else if (role === 'admin') navigate('/admin');
+  };
+
+  const handleAddRole = () => {
+    setShowRoleSwitcher(false);
+    navigate('/signup?role=barber');
   };
 
   const handleLogout = async () => {
@@ -86,14 +72,12 @@ const ProfilePage = () => {
   };
 
   const menuItems = [
-    { icon: User, label: 'Edit Profile', action: startEditing },
+    { icon: User, label: 'Manage Profile', action: () => navigate('/manage-profile') },
     { icon: Calendar, label: 'My Appointments', action: () => navigate('/appointments') },
     { icon: CreditCard, label: 'Payment Methods', action: () => toast.info('Coming soon') },
     ...(activeRole === 'barber' ? [{ icon: Scissors, label: 'Barber Dashboard', action: () => navigate('/dashboard') }] : []),
     ...(activeRole === 'shop_owner' ? [{ icon: Store, label: 'Shop Dashboard', action: () => navigate('/shop-dashboard') }] : []),
-    ...(activeRole === 'admin' ? [{ icon: Shield, label: 'Admin Panel', action: () => navigate('/admin') }] : []),
-    ...(roles.length > 1 ? [{ icon: ArrowRightLeft, label: 'Switch Mode', action: () => setShowRoleSwitcher(true) }] : []),
-    { icon: Lock, label: 'Change Password', action: () => setShowPasswordChange(true) },
+    { icon: ArrowRightLeft, label: 'Switch Mode', action: () => setShowRoleSwitcher(true) },
     { icon: Bell, label: 'Notifications', action: () => toast.info('Check the bell icon in the header') },
     { icon: HelpCircle, label: 'Help & Support', action: () => navigate('/help-support') },
   ];
@@ -118,39 +102,13 @@ const ProfilePage = () => {
               </button>
             </div>
             <div className="flex-1">
-              {editing ? (
-                <div className="space-y-2">
-                  <input value={name} onChange={e => setName(e.target.value)} placeholder="Name"
-                    className="w-full h-10 px-3 rounded-xl bg-secondary text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                  <div className="relative">
-                    <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone"
-                      className="w-full h-10 pl-9 pr-3 rounded-xl bg-secondary text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                  </div>
-                  <div className="relative">
-                    <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email"
-                      className="w-full h-10 pl-9 pr-3 rounded-xl bg-secondary text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={handleSave} disabled={saving} className="h-9 px-4 gold-gradient rounded-xl text-sm font-medium text-primary-foreground flex items-center gap-1">
-                      {saving ? <Loader2 size={14} className="animate-spin" /> : null} Save
-                    </button>
-                    <button onClick={() => setEditing(false)} className="h-9 px-4 bg-secondary rounded-xl text-sm font-medium text-foreground">Cancel</button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <h2 className="text-lg font-semibold text-foreground">{displayName}</h2>
-                  <p className="text-sm text-muted-foreground">{displayPhone || 'No phone set'}</p>
-                  <p className="text-xs text-muted-foreground">{displayEmail}</p>
-                  {activeRole && (
-                    <span className="inline-flex items-center gap-1 text-xs text-primary font-medium capitalize mt-1">
-                      {roleLabels[activeRole] || activeRole.replace('_', ' ')}
-                      {roles.length > 1 && <RefreshCw size={10} />}
-                    </span>
-                  )}
-                </>
+              <h2 className="text-lg font-semibold text-foreground">{displayName}</h2>
+              <p className="text-sm text-muted-foreground">{displayPhone || 'No phone set'}</p>
+              <p className="text-xs text-muted-foreground">{displayEmail}</p>
+              {activeRole && (
+                <span className="inline-flex items-center gap-1 text-xs text-primary font-medium capitalize mt-1">
+                  {roleLabels[activeRole] || activeRole.replace('_', ' ')}
+                </span>
               )}
             </div>
           </div>
@@ -164,7 +122,15 @@ const ProfilePage = () => {
             <h3 className="text-lg font-semibold text-foreground mb-1">Switch Mode</h3>
             <p className="text-xs text-muted-foreground mb-4">Current: {roleLabels[activeRole || ''] || activeRole}</p>
             <div className="space-y-2">
-              {roles.map(r => (
+              {/* Always show customer option */}
+              <button onClick={() => handleSwitchRole('customer')}
+                className={`w-full p-4 rounded-xl text-left text-sm font-medium transition-all ${
+                  activeRole === 'customer' ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary/80'
+                }`}>
+                👤 Customer
+              </button>
+              {/* Show existing roles */}
+              {roles.filter(r => r !== 'customer').map(r => (
                 <button key={r} onClick={() => handleSwitchRole(r)}
                   className={`w-full p-4 rounded-xl text-left text-sm font-medium transition-all ${
                     r === activeRole ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary/80'
@@ -172,32 +138,17 @@ const ProfilePage = () => {
                   {roleLabels[r] || r.replace('_', ' ')}
                 </button>
               ))}
+              {/* Option to add barber/shop role if they don't have it */}
+              {!roles.includes('barber') && !roles.includes('shop_owner') && (
+                <button onClick={() => { setShowRoleSwitcher(false); navigate('/signup?role=barber'); }}
+                  className="w-full p-4 rounded-xl text-left text-sm font-medium bg-secondary/50 text-muted-foreground border border-dashed border-border">
+                  ➕ Become a Barber / Shop Owner
+                </button>
+              )}
             </div>
             <button onClick={() => setShowRoleSwitcher(false)} className="w-full mt-4 h-10 bg-secondary rounded-xl text-sm text-muted-foreground">
               Cancel
             </button>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Password Change Modal */}
-      {showPasswordChange && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-8">
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Change Password</h3>
-            <div className="space-y-3">
-              <input type="password" placeholder="New Password (min 6 chars)" value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl bg-secondary text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              <button onClick={handleChangePassword} disabled={changingPassword}
-                className="w-full h-12 gold-gradient rounded-xl text-sm font-semibold text-primary-foreground flex items-center justify-center gap-2">
-                {changingPassword ? <Loader2 size={16} className="animate-spin" /> : null} Update Password
-              </button>
-              <button onClick={() => { setShowPasswordChange(false); setNewPassword(''); }}
-                className="w-full h-10 bg-secondary rounded-xl text-sm text-muted-foreground">
-                Cancel
-              </button>
-            </div>
           </motion.div>
         </div>
       )}

@@ -1,19 +1,18 @@
-import { Scissors } from 'lucide-react';
+import bmbLogo from '@/assets/bmb-logo.png';
 
 interface AppLogoProps {
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 const AppLogo = ({ size = 'sm' }: AppLogoProps) => {
-  const dims = size === 'md' ? 'w-12 h-12' : 'w-11 h-11';
-  const iconSize = size === 'md' ? 22 : 20;
+  const dims = size === 'lg' ? 'w-24 h-24' : size === 'md' ? 'w-14 h-14' : 'w-11 h-11';
 
   return (
-    <div
-      className={`${dims} rounded-xl bg-secondary flex items-center justify-center shadow-[0_0_20px_rgba(210,160,60,0.1)]`}
-    >
-      <Scissors size={iconSize} className="text-primary" strokeWidth={2.2} />
-    </div>
+    <img
+      src={bmbLogo}
+      alt="BookMyBarber"
+      className={`${dims} rounded-xl object-cover`}
+    />
   );
 };
 
