@@ -68,8 +68,11 @@ const BarberProfilePage = () => {
       <div className="px-5 pt-16">
         <h1 className="text-xl font-bold text-foreground mt-2">{barber.name}</h1>
         <div className="flex items-center gap-1.5 mt-1">
-
-        <p className="text-sm text-muted-foreground mt-4">
+          <Star size={14} className="fill-primary text-primary" />
+          <span className="text-sm font-semibold text-foreground">{barber.rating}</span>
+          <span className="text-xs text-muted-foreground">({barber.reviewCount})</span>
+        </div>
+        <p className="text-sm text-muted-foreground mt-2">
           {barber.type === 'independent' ? 'Independent Barber' : barber.shopName}
           {barber.experience && <span className="text-primary"> • {barber.experience} yrs exp</span>}
         </p>
