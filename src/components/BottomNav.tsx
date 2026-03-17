@@ -1,17 +1,14 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, Calendar, User, Scissors, Store, Shield } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 const BottomNav = () => {
   const location = useLocation();
-  const { activeRole } = useAuth();
+  const { activeRole, profile } = useAuth();
 
-  // Hide on certain pages
   const hiddenPaths = ['/login', '/signin', '/signup', '/verify', '/forgot-password', '/reset-password', '/welcome', '/booking/', '/payment/', '/barber-onboarding', '/shop-onboarding'];
   if (location.pathname === '/' || hiddenPaths.some(p => location.pathname.startsWith(p))) return null;
 
-  // Role-based navigation tabs
   const getTabs = () => {
     switch (activeRole) {
       case 'barber':
@@ -32,17 +29,18 @@ const BottomNav = () => {
           { icon: Home, label: 'Home', path: '/home' },
           { icon: User, label: 'Profile', path: '/profile' },
         ];
-      default: // customer or guest
+      default:
         return [
           { icon: Home, label: 'Home', path: '/home' },
           { icon: Search, label: 'Search', path: '/search' },
           { icon: Calendar, label: 'Bookings', path: '/appointments' },
-          { icon: User, label: 'Profile', path: '/profile' },
+          { icon: null, label: 'Profile', path: '/profile' },
         ];
     }
   };
 
   const tabs = getTabs();
+  const initial = profile?.name?.charAt(0)?.toUpperCase() || 'U';
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-xl border-t border-border/50 safe-bottom">
@@ -57,7 +55,17 @@ const BottomNav = () => {
                 active ? 'text-primary scale-105' : 'text-muted-foreground'
               }`}
             >
-              <Icon size={22} strokeWidth={active ? 2.5 : 1.5} />
+              {Icon ? (
+                <Icon size={22} strokeWidth={active ? 2.5 : 1.5} />
+              ) : (
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                  active ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-muted-foreground'
+                }`}>
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" />
+                  ) : initial}
+                </div>
+              )}
               <span className="text-[10px] font-medium">{label}</span>
             </Link>
           );

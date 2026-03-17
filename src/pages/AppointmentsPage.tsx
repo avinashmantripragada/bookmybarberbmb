@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Check, X, Loader2 } from 'lucide-react';
+import { Clock, Check, X, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppointments } from '@/hooks/useData';
@@ -18,11 +18,8 @@ const AppointmentsPage = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="flex items-center gap-3 px-5 pt-14 pb-4">
-        <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-          <ArrowLeft size={20} className="text-foreground" />
-        </button>
-        <h1 className="text-xl font-bold text-foreground">My Appointments</h1>
+      <div className="px-5 pt-14 pb-4">
+        <h1 className="text-2xl font-bold text-foreground">My Appointments</h1>
       </div>
 
       <div className="px-5 space-y-3">
