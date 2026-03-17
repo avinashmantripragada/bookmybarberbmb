@@ -225,11 +225,11 @@ const AppointmentDetailsPage = () => {
       {apt.status === 'upcoming' && (
         <div className="px-5 space-y-3">
           <button onClick={handleReschedule}
-            className="w-full h-13 bg-secondary rounded-2xl font-semibold text-foreground text-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
-            <RotateCcw size={16} /> Reschedule Appointment
+            className="w-full h-14 rounded-2xl font-semibold text-foreground text-sm flex items-center justify-center gap-2.5 active:scale-[0.97] transition-all border border-primary/40 bg-primary/5 hover:bg-primary/10">
+            <RotateCcw size={16} className="text-primary" /> Reschedule Appointment
           </button>
           <button onClick={() => setShowCancel(true)}
-            className="w-full h-13 bg-destructive/10 rounded-2xl font-semibold text-destructive text-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
+            className="w-full h-14 rounded-2xl font-semibold text-destructive text-sm flex items-center justify-center gap-2.5 active:scale-[0.97] transition-all border border-destructive/30 bg-destructive/5 hover:bg-destructive/10 shadow-[0_0_20px_-6px] shadow-destructive/20">
             <X size={16} /> Cancel Appointment
           </button>
         </div>
@@ -238,12 +238,12 @@ const AppointmentDetailsPage = () => {
       {apt.status === 'completed' && (
         <div className="px-5 space-y-3">
           <button onClick={() => navigate('/review', { state: { barberId: apt.barberId || apt.barber.id } })}
-            className="w-full h-13 gold-gradient rounded-2xl font-semibold text-primary-foreground text-sm active:scale-[0.97] transition-transform">
+            className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-sm active:scale-[0.97] transition-transform">
             Leave a Review
           </button>
           <button onClick={() => navigate(`/booking/${apt.barber.id}?service=${apt.service.id}`)}
-            className="w-full h-13 bg-secondary rounded-2xl font-semibold text-foreground text-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
-            <RotateCcw size={16} /> Rebook This Service
+            className="w-full h-14 rounded-2xl font-semibold text-foreground text-sm flex items-center justify-center gap-2.5 active:scale-[0.97] transition-all border border-primary/40 bg-primary/5 hover:bg-primary/10">
+            <RotateCcw size={16} className="text-primary" /> Rebook This Service
           </button>
         </div>
       )}

@@ -36,20 +36,20 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="px-5 pt-14 pb-3">
+      <div className="px-5 pt-12 pb-2">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
               <AppLogo size="sm" />
-              <h1 className="text-lg font-bold gold-text leading-tight">BookMyBarber</h1>
+              <div>
+                <h1 className="text-lg font-bold gold-text leading-none">BookMyBarber</h1>
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <MapPin size={10} /> Bangalore, Karnataka
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              {user && <NotificationBell />}
-            </div>
+            <NotificationBell />
           </div>
-          <p className="text-[11px] text-muted-foreground flex items-center gap-1 ml-14 -mt-1">
-            <MapPin size={10} /> Bangalore, Karnataka
-          </p>
         </motion.div>
       </div>
 
