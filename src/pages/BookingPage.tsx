@@ -125,7 +125,7 @@ const BookingPage = () => {
 
             {selectedDate && selectedTime && (
               <motion.button initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onClick={() => setStep(3)}
-                className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg mt-6 active:scale-[0.97] transition-transform">
+                className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg mt-6 active:scale-[0.97] transition-transform shadow-[0_4px_20px_-4px_hsl(42,87%,55%,0.4)]">
                 Continue
               </motion.button>
             )}
