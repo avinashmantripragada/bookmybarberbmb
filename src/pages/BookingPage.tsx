@@ -58,7 +58,7 @@ const BookingPage = () => {
   const canProceed = selectedService && selectedDate && selectedTime;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32">
       <div className="flex items-center gap-3 px-5 pt-14 pb-4">
         <button onClick={() => step > 1 ? setStep(step - 1) : navigate(-1)} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
           <ArrowLeft size={20} className="text-foreground" />
@@ -125,7 +125,7 @@ const BookingPage = () => {
 
             {selectedDate && selectedTime && (
               <motion.button initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onClick={() => setStep(3)}
-                className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg mt-6 active:scale-[0.97] transition-transform">
+                className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg mt-6 active:scale-[0.97] transition-transform shadow-[0_4px_20px_-4px_hsl(42,87%,55%,0.4)]">
                 Continue
               </motion.button>
             )}
@@ -185,7 +185,7 @@ const BookingPage = () => {
 
             <button onClick={() => navigate(`/payment/${barber.id}`, {
               state: { service: selectedService, date: selectedDate, dateISO: selectedDateISO, time: selectedTime, barber, barberId: barber.id, tip: effectiveTip }
-            })} className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg mt-6 active:scale-[0.97] transition-transform">
+            })} className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg mt-6 active:scale-[0.97] transition-transform shadow-[0_4px_20px_-4px_hsl(42,87%,55%,0.4)]">
               Proceed to Payment
             </button>
           </motion.div>

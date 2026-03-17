@@ -29,7 +29,7 @@ const ShopPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       {/* Hero */}
       <div className="relative h-52 bg-secondary overflow-hidden">
         {shop.photo && <img src={shop.photo} alt={shop.name} className="w-full h-full object-cover opacity-60" />}
