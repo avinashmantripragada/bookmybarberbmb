@@ -36,7 +36,7 @@ const BarberProfilePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="min-h-screen bg-background pb-40">
       {/* Hero */}
       <div className="relative h-52 bg-secondary">
         <div className="absolute inset-0 gold-gradient opacity-20" />

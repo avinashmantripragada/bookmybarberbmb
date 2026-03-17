@@ -185,7 +185,7 @@ const BookingPage = () => {
 
             <button onClick={() => navigate(`/payment/${barber.id}`, {
               state: { service: selectedService, date: selectedDate, dateISO: selectedDateISO, time: selectedTime, barber, barberId: barber.id, tip: effectiveTip }
-            })} className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg mt-6 active:scale-[0.97] transition-transform">
+            })} className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg mt-6 active:scale-[0.97] transition-transform shadow-[0_4px_20px_-4px_hsl(42,87%,55%,0.4)]">
               Proceed to Payment
             </button>
           </motion.div>
