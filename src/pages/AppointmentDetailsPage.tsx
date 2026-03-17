@@ -69,7 +69,7 @@ const AppointmentDetailsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-8">
+    <div className="min-h-screen bg-background pb-28">
       {/* Header */}
       <div className="flex items-center gap-3 px-5 pt-14 pb-4">
         <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
