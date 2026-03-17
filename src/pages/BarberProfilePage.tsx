@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Star, MapPin, Phone, Clock, ChevronRight, Navigation, Circle, Loader2, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Phone, Clock, ChevronRight, Navigation, Circle, Loader2, Heart, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useBarber } from '@/hooks/useData';
 import ServiceIcon from '@/components/ServiceIcon';
 import EmptyState from '@/components/EmptyState';
@@ -42,6 +43,18 @@ const BarberProfilePage = () => {
         <button onClick={() => navigate(-1)} className="absolute top-12 left-4 z-10 w-10 h-10 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center">
           <ArrowLeft size={20} className="text-foreground" />
         </button>
+        <div className="absolute top-12 right-4 z-10 flex gap-2">
+          <button onClick={() => toast.success('Added to favorites!')} className="w-10 h-10 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center">
+            <Heart size={18} className="text-foreground" />
+          </button>
+          <button onClick={() => {
+            const text = `Check out ${barber.name} on BookMyBarber!`;
+            if (navigator.share) navigator.share({ title: barber.name, text });
+            else { navigator.clipboard.writeText(text); toast.success('Link copied!'); }
+          }} className="w-10 h-10 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center">
+            <Share2 size={18} className="text-foreground" />
+          </button>
+        </div>
         <div className="absolute -bottom-14 left-5">
           {barber.photo ? (
             <img src={barber.photo} alt={barber.name} className="w-28 h-28 rounded-3xl border-4 border-background object-cover shadow-lg" />

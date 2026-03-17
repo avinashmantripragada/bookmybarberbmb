@@ -82,8 +82,30 @@ const PaymentPage = () => {
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}
           className="w-24 h-24 rounded-full gold-gradient flex items-center justify-center mb-6"><Check size={48} className="text-primary-foreground" /></motion.div>
         <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-2xl font-bold text-foreground mb-2">Booking Confirmed!</motion.h1>
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-muted-foreground text-center mb-6">Your appointment has been booked successfully.</motion.p>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="flex gap-4 mb-8">
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-muted-foreground text-center mb-4">Your appointment has been booked successfully.</motion.p>
+        
+        {/* Booking details card */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="w-full glass-card p-5 mb-5 space-y-3">
+          <div className="flex items-center gap-3">
+            {state?.barber?.photo ? (
+              <img src={state.barber.photo} alt={state.barber.name} className="w-12 h-12 rounded-2xl object-cover" />
+            ) : (
+              <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-xl font-bold text-primary">{state?.barber?.name?.charAt(0)}</div>
+            )}
+            <div>
+              <p className="font-semibold text-foreground">{state?.barber?.name}</p>
+              <p className="text-xs text-muted-foreground">{state?.barber?.shopName}</p>
+            </div>
+          </div>
+          <div className="h-px bg-border" />
+          <div className="flex justify-between text-sm"><span className="text-muted-foreground">Service</span><span className="text-foreground font-medium">{state?.service?.name}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-muted-foreground">Date & Time</span><span className="text-foreground font-medium">{state?.date} • {state?.time}</span></div>
+          {state?.barber?.address && (
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Address</span><span className="text-foreground font-medium text-right max-w-[60%]">{state.barber.address}</span></div>
+          )}
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="flex gap-4 mb-6">
           <button onClick={handleAddToCalendar} className="flex flex-col items-center gap-1.5">
             <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center"><CalendarPlus size={22} className="text-primary" /></div>
             <span className="text-xs text-muted-foreground">Calendar</span>
@@ -97,7 +119,7 @@ const PaymentPage = () => {
             <span className="text-xs text-muted-foreground">Call</span>
           </button>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="w-full space-y-3">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="w-full space-y-3">
           <button onClick={() => navigate('/appointments')} className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg">View My Appointments</button>
           <button onClick={() => navigate('/home')} className="w-full h-14 bg-secondary rounded-2xl font-semibold text-foreground text-lg">Back to Home</button>
         </motion.div>
