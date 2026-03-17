@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { User, Bell, LogOut, ChevronRight, CreditCard, Calendar, Camera, HelpCircle, Loader2, ArrowRightLeft, Settings, Scissors, Store } from 'lucide-react';
+import { User, Bell, LogOut, ChevronRight, CreditCard, Camera, Loader2, ArrowRightLeft, Settings, Scissors, Store, Heart, Star, Shield, HelpCircle, Info, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import AppLogo from '@/components/AppLogo';
+
+const socialLinks = [
+  { label: 'Instagram', url: '#', icon: '📸' },
+  { label: 'Facebook', url: '#', icon: '📘' },
+  { label: 'YouTube', url: '#', icon: '📺' },
+  { label: 'Twitter', url: '#', icon: '🐦' },
+  { label: 'Snapchat', url: '#', icon: '👻' },
+];
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -17,7 +24,6 @@ const ProfilePage = () => {
   const displayPhone = profile?.phone || '';
 
   const handleSwitchRole = async (role: string) => {
-    // Check if user has the necessary profile for this role
     if (role === 'barber') {
       const { data } = await supabase.from('barbers').select('id').eq('user_id', user?.id).single();
       if (!data) {
@@ -36,26 +42,17 @@ const ProfilePage = () => {
         return;
       }
     }
-
-    // If user doesn't have the role yet, add it
     if (!roles.includes(role)) {
       await supabase.from('user_roles').insert({ user_id: user!.id, role: role as any });
       await refreshProfile();
     }
-
     switchRole(role);
     setShowRoleSwitcher(false);
     toast.success(`Switched to ${role.replace('_', ' ')} mode`);
-
     if (role === 'customer') navigate('/home');
     else if (role === 'barber') navigate('/dashboard');
     else if (role === 'shop_owner') navigate('/shop-dashboard');
     else if (role === 'admin') navigate('/admin');
-  };
-
-  const handleAddRole = () => {
-    setShowRoleSwitcher(false);
-    navigate('/signup?role=barber');
   };
 
   const handleLogout = async () => {
@@ -71,26 +68,44 @@ const ProfilePage = () => {
     admin: '🛡️ Admin',
   };
 
-  const menuItems = [
-    { icon: User, label: 'Manage Profile', action: () => navigate('/manage-profile') },
-    { icon: Calendar, label: 'My Appointments', action: () => navigate('/appointments') },
-    { icon: CreditCard, label: 'Payment Methods', action: () => toast.info('Coming soon') },
-    ...(activeRole === 'barber' ? [{ icon: Scissors, label: 'Barber Dashboard', action: () => navigate('/dashboard') }] : []),
-    ...(activeRole === 'shop_owner' ? [{ icon: Store, label: 'Shop Dashboard', action: () => navigate('/shop-dashboard') }] : []),
-    { icon: ArrowRightLeft, label: 'Switch Mode', action: () => setShowRoleSwitcher(true) },
-    { icon: Bell, label: 'Notifications', action: () => toast.info('Check the bell icon in the header') },
-    { icon: HelpCircle, label: 'Help & Support', action: () => navigate('/help-support') },
+  const menuSections = [
+    {
+      title: 'Account',
+      items: [
+        { icon: User, label: 'Manage Profile', action: () => navigate('/manage-profile') },
+        { icon: Heart, label: 'Saved / Favorites', action: () => toast.info('Coming soon') },
+        { icon: CreditCard, label: 'Payments', action: () => navigate('/payments') },
+        { icon: Settings, label: 'Settings', action: () => navigate('/settings') },
+      ],
+    },
+    {
+      title: 'Role',
+      items: [
+        ...(activeRole === 'barber' ? [{ icon: Scissors, label: 'Barber Dashboard', action: () => navigate('/dashboard') }] : []),
+        ...(activeRole === 'shop_owner' ? [{ icon: Store, label: 'Shop Dashboard', action: () => navigate('/shop-dashboard') }] : []),
+        { icon: ArrowRightLeft, label: 'Switch Profile', action: () => setShowRoleSwitcher(true) },
+      ],
+    },
+    {
+      title: 'Support',
+      items: [
+        { icon: HelpCircle, label: 'Help & Support', action: () => navigate('/help-support') },
+        { icon: Star, label: 'Rate App', action: () => toast.info('App Store rating coming soon') },
+        { icon: Info, label: 'About Us', action: () => navigate('/about') },
+      ],
+    },
   ];
 
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 size={32} className="animate-spin text-primary" /></div>;
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="px-5 pt-14 pb-6">
+      <div className="px-5 pt-14 pb-2">
         <h1 className="text-2xl font-bold text-foreground">Profile</h1>
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-5 mb-6">
+      {/* Profile Card */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-5 mb-5">
         <div className="glass-card p-5">
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -101,35 +116,92 @@ const ProfilePage = () => {
                 <Camera size={12} className="text-primary-foreground" />
               </button>
             </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold text-foreground">{displayName}</h2>
-              <p className="text-sm text-muted-foreground">{displayPhone || 'No phone set'}</p>
-              <p className="text-xs text-muted-foreground">{displayEmail}</p>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-semibold text-foreground truncate">{displayName}</h2>
+              <p className="text-sm text-muted-foreground truncate">{displayEmail}</p>
               {activeRole && (
-                <span className="inline-flex items-center gap-1 text-xs text-primary font-medium capitalize mt-1">
+                <span className="inline-flex items-center gap-1 text-xs text-primary font-medium capitalize mt-0.5">
                   {roleLabels[activeRole] || activeRole.replace('_', ' ')}
                 </span>
               )}
             </div>
+            <button onClick={() => setShowRoleSwitcher(true)}
+              className="px-3 py-1.5 rounded-xl bg-secondary text-xs font-medium text-muted-foreground shrink-0">
+              Switch
+            </button>
           </div>
         </div>
       </motion.div>
+
+      {/* Sign in prompt for guests */}
+      {!user && (
+        <div className="px-5 mb-4">
+          <motion.button initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onClick={() => navigate('/signin')}
+            className="w-full glass-card p-4 flex items-center gap-4 text-left">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><User size={18} className="text-primary" /></div>
+            <span className="flex-1 font-medium text-primary">Sign In / Sign Up</span>
+            <ChevronRight size={16} className="text-muted-foreground" />
+          </motion.button>
+        </div>
+      )}
+
+      {/* Menu Sections */}
+      <div className="px-5 space-y-5">
+        {menuSections.map((section, si) => (
+          <div key={section.title}>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">{section.title}</p>
+            <div className="space-y-1.5">
+              {section.items.map((item, i) => (
+                <motion.button key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (si * 4 + i) * 0.03 }}
+                  onClick={item.action} className="w-full glass-card p-4 flex items-center gap-4 text-left">
+                  <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center"><item.icon size={18} className="text-primary" /></div>
+                  <span className="flex-1 font-medium text-foreground text-sm">{item.label}</span>
+                  <ChevronRight size={16} className="text-muted-foreground" />
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {/* Logout */}
+        {user && (
+          <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} onClick={handleLogout}
+            className="w-full glass-card p-4 flex items-center gap-4 text-left">
+            <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center"><LogOut size={18} className="text-destructive" /></div>
+            <span className="flex-1 font-medium text-destructive text-sm">Log Out</span>
+          </motion.button>
+        )}
+
+        {/* Social Links */}
+        <div className="pt-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Follow Us</p>
+          <div className="flex justify-center gap-4">
+            {socialLinks.map(s => (
+              <button key={s.label} onClick={() => window.open(s.url, '_blank')}
+                className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center text-lg active:scale-95 transition-transform">
+                {s.icon}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Version */}
+        <p className="text-center text-[10px] text-muted-foreground/50 py-4">BookMyBarber v1.0.0</p>
+      </div>
 
       {/* Role Switcher Modal */}
       {showRoleSwitcher && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-8">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold text-foreground mb-1">Switch Mode</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-1">Switch Profile</h3>
             <p className="text-xs text-muted-foreground mb-4">Current: {roleLabels[activeRole || ''] || activeRole}</p>
             <div className="space-y-2">
-              {/* Always show customer option */}
               <button onClick={() => handleSwitchRole('customer')}
                 className={`w-full p-4 rounded-xl text-left text-sm font-medium transition-all ${
                   activeRole === 'customer' ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary/80'
                 }`}>
                 👤 Customer
               </button>
-              {/* Show existing roles */}
               {roles.filter(r => r !== 'customer').map(r => (
                 <button key={r} onClick={() => handleSwitchRole(r)}
                   className={`w-full p-4 rounded-xl text-left text-sm font-medium transition-all ${
@@ -138,7 +210,6 @@ const ProfilePage = () => {
                   {roleLabels[r] || r.replace('_', ' ')}
                 </button>
               ))}
-              {/* Option to add barber/shop role if they don't have it */}
               {!roles.includes('barber') && !roles.includes('shop_owner') && (
                 <button onClick={() => { setShowRoleSwitcher(false); navigate('/signup?role=barber'); }}
                   className="w-full p-4 rounded-xl text-left text-sm font-medium bg-secondary/50 text-muted-foreground border border-dashed border-border">
@@ -152,34 +223,6 @@ const ProfilePage = () => {
           </motion.div>
         </div>
       )}
-
-      <div className="px-5 space-y-2">
-        {!user && (
-          <motion.button initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onClick={() => navigate('/signin')}
-            className="w-full glass-card p-4 flex items-center gap-4 text-left">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><User size={18} className="text-primary" /></div>
-            <span className="flex-1 font-medium text-primary">Sign In / Sign Up</span>
-            <ChevronRight size={16} className="text-muted-foreground" />
-          </motion.button>
-        )}
-
-        {menuItems.map((item, i) => (
-          <motion.button key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-            onClick={item.action} className="w-full glass-card p-4 flex items-center gap-4 text-left">
-            <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center"><item.icon size={18} className="text-primary" /></div>
-            <span className="flex-1 font-medium text-foreground">{item.label}</span>
-            <ChevronRight size={16} className="text-muted-foreground" />
-          </motion.button>
-        ))}
-
-        {user && (
-          <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} onClick={handleLogout}
-            className="w-full glass-card p-4 flex items-center gap-4 text-left mt-6">
-            <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center"><LogOut size={18} className="text-destructive" /></div>
-            <span className="flex-1 font-medium text-destructive">Log Out</span>
-          </motion.button>
-        )}
-      </div>
     </div>
   );
 };

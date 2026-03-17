@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Lock, Camera, Phone, Mail, Edit2, Scissors, Store, Clock, Image, ChevronRight, Loader2, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, User, Lock, Camera, Phone, Mail, Calendar, Scissors, Store, Clock, Image, ChevronRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-type Section = 'menu' | 'personal' | 'password' | 'services' | 'portfolio' | 'shop' | 'availability';
+type Section = 'menu' | 'personal' | 'password';
 
 const ManageProfilePage = () => {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ const ManageProfilePage = () => {
   const [name, setName] = useState(profile?.name || '');
   const [phone, setPhone] = useState(profile?.phone || '');
   const [email, setEmail] = useState(profile?.email || user?.email || '');
+  const [dob, setDob] = useState('');
   const [bio, setBio] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -43,29 +44,22 @@ const ManageProfilePage = () => {
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
 
     setChangingPassword(true);
-    // Verify current password by re-signing in
     const { error: signInErr } = await supabase.auth.signInWithPassword({
       email: user?.email || '',
       password: currentPassword,
     });
-    if (signInErr) {
-      setChangingPassword(false);
-      toast.error('Current password is incorrect');
-      return;
-    }
+    if (signInErr) { setChangingPassword(false); toast.error('Current password is incorrect'); return; }
 
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setChangingPassword(false);
     if (error) { toast.error(error.message || 'Failed to change password'); return; }
-    toast.success('Password changed successfully!');
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    toast.success('Password changed!');
+    setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
     setSection('menu');
   };
 
   const sections = [
-    { key: 'personal' as Section, icon: User, label: 'Personal Information', desc: 'Name, photo, phone, email, bio' },
+    { key: 'personal' as Section, icon: User, label: 'Personal Information', desc: 'Name, photo, phone, email, DOB, bio' },
     { key: 'password' as Section, icon: Lock, label: 'Password & Security', desc: 'Change password, security settings' },
     ...(activeRole === 'barber' ? [
       { key: 'services' as Section, icon: Scissors, label: 'Services', desc: 'Manage your service offerings' },
@@ -74,14 +68,50 @@ const ManageProfilePage = () => {
     ] : []),
     ...(activeRole === 'shop_owner' ? [
       { key: 'shop' as Section, icon: Store, label: 'Shop Details', desc: 'Shop info, address, hours' },
-      { key: 'services' as Section, icon: Scissors, label: 'Services', desc: 'Manage shop services' },
     ] : []),
   ];
 
-  const renderContent = () => {
-    switch (section) {
-      case 'personal':
-        return (
+  return (
+    <div className="min-h-screen bg-background pb-24">
+      <div className="px-5 pt-14 pb-4">
+        <div className="flex items-center gap-3">
+          <button onClick={() => section === 'menu' ? navigate(-1) : setSection('menu')}
+            className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+            <ArrowLeft size={20} className="text-foreground" />
+          </button>
+          <h1 className="text-xl font-bold text-foreground">
+            {section === 'menu' ? 'Manage Profile' : sections.find(s => s.key === section)?.label || 'Manage Profile'}
+          </h1>
+        </div>
+      </div>
+
+      <div className="px-5">
+        {section === 'menu' ? (
+          <div className="space-y-2">
+            {sections.map((item, i) => (
+              <motion.button key={item.key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                onClick={() => {
+                  if (['services', 'portfolio', 'availability'].includes(item.key)) {
+                    navigate(activeRole === 'barber' ? '/dashboard' : '/shop-dashboard');
+                  } else if (item.key === 'shop') {
+                    navigate('/shop-onboarding');
+                  } else {
+                    setSection(item.key as Section);
+                  }
+                }}
+                className="w-full glass-card p-4 flex items-center gap-4 text-left">
+                <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
+                  <item.icon size={18} className="text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground text-sm">{item.label}</p>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
+                </div>
+                <ChevronRight size={16} className="text-muted-foreground" />
+              </motion.button>
+            ))}
+          </div>
+        ) : section === 'personal' ? (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
             <div className="flex justify-center mb-4">
               <div className="relative">
@@ -119,6 +149,15 @@ const ManageProfilePage = () => {
             </div>
 
             <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wider mb-1 block">Date of Birth</label>
+              <div className="relative">
+                <Calendar size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input type="date" value={dob} onChange={e => setDob(e.target.value)}
+                  className="w-full h-14 pl-12 pr-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              </div>
+            </div>
+
+            <div>
               <label className="text-xs text-muted-foreground uppercase tracking-wider mb-1 block">Bio</label>
               <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell something about yourself"
                 className="w-full h-24 px-5 py-4 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
@@ -129,13 +168,10 @@ const ManageProfilePage = () => {
               {saving ? <Loader2 size={20} className="animate-spin" /> : null} Save Changes
             </button>
           </motion.div>
-        );
-
-      case 'password':
-        return (
+        ) : section === 'password' ? (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
             <div className="glass-card p-4 mb-2">
-              <p className="text-sm text-muted-foreground">To change your password, enter your current password first, then set a new one.</p>
+              <p className="text-sm text-muted-foreground">Enter your current password first, then set a new one.</p>
             </div>
 
             <div>
@@ -173,91 +209,7 @@ const ManageProfilePage = () => {
               Forgot your password?
             </button>
           </motion.div>
-        );
-
-      case 'services':
-        return (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <p className="text-sm text-muted-foreground">Manage your services from the dashboard.</p>
-            <button onClick={() => navigate(activeRole === 'barber' ? '/dashboard' : '/shop-dashboard')}
-              className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform">
-              Go to Dashboard
-            </button>
-          </motion.div>
-        );
-
-      case 'portfolio':
-        return (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <p className="text-sm text-muted-foreground">Manage your portfolio photos from the dashboard.</p>
-            <button onClick={() => navigate('/dashboard')}
-              className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform">
-              Go to Dashboard
-            </button>
-          </motion.div>
-        );
-
-      case 'shop':
-        return (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <p className="text-sm text-muted-foreground">Edit your shop details from the shop setup page.</p>
-            <button onClick={() => navigate('/shop-onboarding')}
-              className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform">
-              Edit Shop Details
-            </button>
-          </motion.div>
-        );
-
-      case 'availability':
-        return (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <p className="text-sm text-muted-foreground">Set your availability from the dashboard.</p>
-            <button onClick={() => navigate('/dashboard')}
-              className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform">
-              Go to Dashboard
-            </button>
-          </motion.div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="px-5 pt-14 pb-4">
-        <div className="flex items-center gap-3">
-          <button onClick={() => section === 'menu' ? navigate(-1) : setSection('menu')}
-            className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-            <ArrowLeft size={20} className="text-foreground" />
-          </button>
-          <h1 className="text-xl font-bold text-foreground">
-            {section === 'menu' ? 'Manage Profile' : sections.find(s => s.key === section)?.label || 'Manage Profile'}
-          </h1>
-        </div>
-      </div>
-
-      <div className="px-5">
-        {section === 'menu' ? (
-          <div className="space-y-2">
-            {sections.map((item, i) => (
-              <motion.button key={item.key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                onClick={() => setSection(item.key)} className="w-full glass-card p-4 flex items-center gap-4 text-left">
-                <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
-                  <item.icon size={18} className="text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{item.label}</p>
-                  <p className="text-xs text-muted-foreground">{item.desc}</p>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground" />
-              </motion.button>
-            ))}
-          </div>
-        ) : (
-          renderContent()
-        )}
+        ) : null}
       </div>
     </div>
   );
