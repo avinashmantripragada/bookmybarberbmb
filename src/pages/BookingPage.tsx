@@ -6,6 +6,8 @@ import { useBarber } from '@/hooks/useData';
 import { Service } from '@/types';
 import ServiceIcon from '@/components/ServiceIcon';
 
+const tipOptions = [0, 20, 50, 100];
+
 const BookingPage = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -17,6 +19,9 @@ const BookingPage = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDateISO, setSelectedDateISO] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [tip, setTip] = useState(0);
+  const [customTip, setCustomTip] = useState('');
+  const [showCustomTip, setShowCustomTip] = useState(false);
   const [step, setStep] = useState(preselectedServiceId ? 2 : 1);
   const [initialized, setInitialized] = useState(false);
 
@@ -25,7 +30,6 @@ const BookingPage = () => {
 
   const { barber } = data;
 
-  // Initialize preselected service once data loads
   if (!initialized && barber.services.length > 0) {
     if (preselectedServiceId) {
       const found = barber.services.find(s => s.id === preselectedServiceId);
@@ -49,6 +53,8 @@ const BookingPage = () => {
     };
   });
 
+  const effectiveTip = showCustomTip ? (Number(customTip) || 0) : tip;
+  const totalPrice = (selectedService?.price || 0) + effectiveTip;
   const canProceed = selectedService && selectedDate && selectedTime;
 
   return (
@@ -142,12 +148,43 @@ const BookingPage = () => {
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Time</span><span className="text-foreground font-medium">{selectedTime}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Duration</span><span className="text-foreground font-medium">{selectedService.duration} min</span></div>
               </div>
-              <div className="h-px bg-border" />
-              <div className="flex justify-between"><span className="font-semibold text-foreground">Total</span><span className="text-xl font-bold gold-text">₹{selectedService.price}</span></div>
+            </div>
+
+            {/* Tip Selection */}
+            <div className="mt-5">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Add a Tip</h3>
+              <div className="flex gap-2 mb-2">
+                {tipOptions.map(t => (
+                  <button key={t} onClick={() => { setTip(t); setShowCustomTip(false); }}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${!showCustomTip && tip === t ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
+                    {t === 0 ? 'None' : `₹${t}`}
+                  </button>
+                ))}
+                <button onClick={() => { setShowCustomTip(true); setTip(0); }}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${showCustomTip ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
+                  Custom
+                </button>
+              </div>
+              {showCustomTip && (
+                <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}>
+                  <input type="number" placeholder="Enter tip amount (₹)" value={customTip} onChange={(e) => setCustomTip(e.target.value)}
+                    className="w-full h-12 px-4 rounded-xl bg-secondary text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                </motion.div>
+              )}
+            </div>
+
+            {/* Total */}
+            <div className="glass-card p-4 mt-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Service</span><span className="text-foreground">₹{selectedService.price}</span></div>
+                {effectiveTip > 0 && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Tip</span><span className="text-foreground">₹{effectiveTip}</span></div>}
+                <div className="h-px bg-border" />
+                <div className="flex justify-between"><span className="font-semibold text-foreground">Total</span><span className="text-xl font-bold gold-text">₹{totalPrice}</span></div>
+              </div>
             </div>
 
             <button onClick={() => navigate(`/payment/${barber.id}`, {
-              state: { service: selectedService, date: selectedDate, dateISO: selectedDateISO, time: selectedTime, barber, barberId: barber.id }
+              state: { service: selectedService, date: selectedDate, dateISO: selectedDateISO, time: selectedTime, barber, barberId: barber.id, tip: effectiveTip }
             })} className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg mt-6 active:scale-[0.97] transition-transform">
               Proceed to Payment
             </button>

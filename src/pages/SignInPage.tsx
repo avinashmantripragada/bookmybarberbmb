@@ -28,17 +28,6 @@ const SignInPage = () => {
     }
 
     toast.success('Welcome back!');
-    // Redirect will happen based on role from AuthContext
-    // Small delay to let auth context populate roles
-    setTimeout(async () => {
-      // Read active role from localStorage or default
-      const userId = (await import('@/integrations/supabase/client')).supabase.auth.getUser();
-      navigate('/home'); // Default; BottomNav will show correct tabs
-    }, 200);
-  };
-
-  const handleGuest = () => {
-    toast.success('Continuing as guest');
     navigate('/home');
   };
 
@@ -77,7 +66,6 @@ const SignInPage = () => {
             {submitting ? <><Loader2 size={20} className="animate-spin" /> Signing in...</> : 'Sign In'}
           </button>
 
-          <button onClick={handleGuest} className="w-full h-12 rounded-2xl font-medium text-muted-foreground text-base hover:text-foreground transition-colors">Continue as Guest</button>
           <p className="text-center text-sm text-muted-foreground">Don't have an account?{' '}<button onClick={() => navigate('/signup')} className="text-primary font-medium">Sign Up</button></p>
         </motion.div>
       </div>
