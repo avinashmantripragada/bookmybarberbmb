@@ -125,10 +125,6 @@ const ProfilePage = () => {
                 </span>
               )}
             </div>
-            <button onClick={() => setShowRoleSwitcher(true)}
-              className="px-3 py-1.5 rounded-xl bg-secondary text-xs font-medium text-muted-foreground shrink-0">
-              Switch
-            </button>
           </div>
         </div>
       </motion.div>

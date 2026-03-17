@@ -65,17 +65,14 @@ const BarberProfilePage = () => {
       </div>
 
       {/* Header Info */}
-      <div className="px-5 pt-18 mt-2">
-        <div className="ml-[8.5rem] -mt-12">
-          <h1 className="text-xl font-bold text-foreground">{barber.name}</h1>
-          <div className="flex items-center gap-1 mt-0.5">
-            <Star size={14} className="fill-primary text-primary" />
-            <span className="text-sm font-semibold text-foreground">{barber.rating}</span>
-            <span className="text-xs text-muted-foreground">({barber.reviewCount})</span>
-          </div>
+      <div className="px-5 pt-16">
+        <h1 className="text-xl font-bold text-foreground mt-2">{barber.name}</h1>
+        <div className="flex items-center gap-1.5 mt-1">
+          <Star size={14} className="fill-primary text-primary" />
+          <span className="text-sm font-semibold text-foreground">{barber.rating}</span>
+          <span className="text-xs text-muted-foreground">({barber.reviewCount})</span>
         </div>
-
-        <p className="text-sm text-muted-foreground mt-4">
+        <p className="text-sm text-muted-foreground mt-2">
           {barber.type === 'independent' ? 'Independent Barber' : barber.shopName}
           {barber.experience && <span className="text-primary"> • {barber.experience} yrs exp</span>}
         </p>
