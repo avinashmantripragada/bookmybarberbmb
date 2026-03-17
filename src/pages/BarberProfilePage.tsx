@@ -200,8 +200,8 @@ const BarberProfilePage = () => {
       </div>
 
       {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-background via-background to-transparent">
-        <button onClick={() => navigate(`/booking/${barber.id}`)} className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform">
+      <div className="fixed bottom-[4.5rem] left-0 right-0 p-4 px-5 bg-gradient-to-t from-background via-background/95 to-transparent z-40">
+        <button onClick={() => navigate(`/booking/${barber.id}`)} className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform shadow-[0_4px_20px_-4px_hsl(42,87%,55%,0.4)]">
           Book Appointment
         </button>
       </div>
