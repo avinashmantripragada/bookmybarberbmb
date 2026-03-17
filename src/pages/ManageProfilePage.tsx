@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-type Section = 'menu' | 'personal' | 'password';
+type Section = 'menu' | 'personal' | 'password' | 'services' | 'portfolio' | 'availability' | 'shop';
 
 const ManageProfilePage = () => {
   const navigate = useNavigate();

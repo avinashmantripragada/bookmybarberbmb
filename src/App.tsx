@@ -19,8 +19,14 @@ import BarberProfilePage from "./pages/BarberProfilePage";
 import BookingPage from "./pages/BookingPage";
 import PaymentPage from "./pages/PaymentPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
+import AppointmentDetailsPage from "./pages/AppointmentDetailsPage";
+import ChatPage from "./pages/ChatPage";
 import ReviewPage from "./pages/ReviewPage";
 import ProfilePage from "./pages/ProfilePage";
+import ManageProfilePage from "./pages/ManageProfilePage";
+import SettingsPage from "./pages/SettingsPage";
+import PaymentMethodsPage from "./pages/PaymentMethodsPage";
+import AboutPage from "./pages/AboutPage";
 import BarberDashboard from "./pages/BarberDashboard";
 import BarberOnboardingPage from "./pages/BarberOnboardingPage";
 import ShopOnboardingPage from "./pages/ShopOnboardingPage";
@@ -28,7 +34,6 @@ import ShopPage from "./pages/ShopPage";
 import ShopOwnerDashboard from "./pages/ShopOwnerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import SearchPage from "./pages/SearchPage";
-import ManageProfilePage from "./pages/ManageProfilePage";
 import HelpSupportPage from "./pages/HelpSupportPage";
 import FAQsPage from "./pages/FAQsPage";
 import ContactSupportPage from "./pages/ContactSupportPage";
@@ -68,9 +73,14 @@ const App = () => {
                 <Route path="/booking/:id" element={<BookingPage />} />
                 <Route path="/payment/:id" element={<PaymentPage />} />
                 <Route path="/appointments" element={<AppointmentsPage />} />
+                <Route path="/appointment-details" element={<AppointmentDetailsPage />} />
+                <Route path="/chat" element={<ChatPage />} />
                 <Route path="/review" element={<ReviewPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/manage-profile" element={<ManageProfilePage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/payments" element={<PaymentMethodsPage />} />
+                <Route path="/about" element={<AboutPage />} />
                 <Route path="/dashboard" element={<BarberDashboard />} />
                 <Route path="/barber-onboarding" element={<BarberOnboardingPage />} />
                 <Route path="/shop-onboarding" element={<ShopOnboardingPage />} />
