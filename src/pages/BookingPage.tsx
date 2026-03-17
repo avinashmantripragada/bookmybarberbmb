@@ -58,7 +58,7 @@ const BookingPage = () => {
   const canProceed = selectedService && selectedDate && selectedTime;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32">
       <div className="flex items-center gap-3 px-5 pt-14 pb-4">
         <button onClick={() => step > 1 ? setStep(step - 1) : navigate(-1)} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
           <ArrowLeft size={20} className="text-foreground" />
