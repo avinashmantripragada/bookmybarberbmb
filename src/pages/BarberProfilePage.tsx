@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Star, MapPin, Phone, Clock, ChevronRight, Navigation, Circle, Loader2, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Phone, Clock, ChevronRight, Navigation, Circle, Loader2, Heart, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useBarber } from '@/hooks/useData';
 import ServiceIcon from '@/components/ServiceIcon';
 import EmptyState from '@/components/EmptyState';
