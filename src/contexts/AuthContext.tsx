@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 
@@ -40,6 +40,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [roles, setRoles] = useState<string[]>([]);
   const [activeRole, setActiveRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  // Prevent automatic role switching once user has explicitly chosen
+  const userSwitchedRef = useRef(false);
 
   const fetchProfile = async (userId: string) => {
     const { data: profileData } = await supabase
@@ -58,12 +60,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (roleData && roleData.length > 0) {
       const userRoles = roleData.map(r => r.role as string);
       setRoles(userRoles);
-      // Restore saved active role or default to first
-      const saved = localStorage.getItem(`bmb_active_role_${userId}`);
-      if (saved && userRoles.includes(saved)) {
-        setActiveRole(saved);
-      } else {
-        setActiveRole(userRoles[0]);
+
+      // Only set active role if user hasn't explicitly switched
+      if (!userSwitchedRef.current) {
+        const saved = localStorage.getItem(`bmb_active_role_${userId}`);
+        if (saved && userRoles.includes(saved)) {
+          setActiveRole(saved);
+        } else if (!activeRole || !userRoles.includes(activeRole)) {
+          setActiveRole(userRoles[0]);
+        }
       }
     }
   };
@@ -95,6 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const switchRole = (role: string) => {
     if (roles.includes(role)) {
+      userSwitchedRef.current = true;
       setActiveRole(role);
       if (user) {
         localStorage.setItem(`bmb_active_role_${user.id}`, role);
@@ -114,6 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setProfile(null);
           setRoles([]);
           setActiveRole(null);
+          userSwitchedRef.current = false;
         }
         setLoading(false);
       }
@@ -144,11 +151,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
+    userSwitchedRef.current = false;
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };
 
   const signOut = async () => {
+    userSwitchedRef.current = false;
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
@@ -161,7 +170,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user) await fetchProfile(user.id);
   };
 
-  // Keep backward compat: expose `role` as `activeRole`
   return (
     <AuthContext.Provider value={{ user, session, profile, roles, activeRole, loading, signUp, signIn, signOut, refreshProfile, switchRole }}>
       {children}
