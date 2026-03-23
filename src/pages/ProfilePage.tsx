@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { User, Bell, LogOut, ChevronRight, CreditCard, Camera, Loader2, ArrowRightLeft, Settings, Scissors, Store, Heart, Star, Shield, HelpCircle, Info, ExternalLink } from 'lucide-react';
+import { User, LogOut, ChevronRight, CreditCard, Camera, Loader2, ArrowRightLeft, Settings, Scissors, Store, Heart, Star, HelpCircle, Info, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,7 +21,6 @@ const ProfilePage = () => {
 
   const displayName = profile?.name || user?.user_metadata?.name || 'Guest';
   const displayEmail = profile?.email || user?.email || '';
-  const displayPhone = profile?.phone || '';
 
   const handleSwitchRole = async (role: string) => {
     if (role === 'barber') {
@@ -50,8 +49,7 @@ const ProfilePage = () => {
     setShowRoleSwitcher(false);
     toast.success(`Switched to ${role.replace('_', ' ')} mode`);
     if (role === 'customer') navigate('/home');
-    else if (role === 'barber') navigate('/dashboard');
-    else if (role === 'shop_owner') navigate('/shop-dashboard');
+    else if (role === 'barber' || role === 'shop_owner') navigate('/dashboard');
     else if (role === 'admin') navigate('/admin');
   };
 
@@ -68,21 +66,28 @@ const ProfilePage = () => {
     admin: '🛡️ Admin',
   };
 
+  const isBusinessRole = activeRole === 'barber' || activeRole === 'shop_owner';
+
   const menuSections = [
     {
       title: 'Account',
       items: [
         { icon: User, label: 'Manage Profile', action: () => navigate('/manage-profile') },
-        { icon: Heart, label: 'Saved / Favorites', action: () => toast.info('Coming soon') },
+        ...(!isBusinessRole ? [{ icon: Heart, label: 'Saved / Favorites', action: () => toast.info('Coming soon') }] : []),
         { icon: CreditCard, label: 'Payments', action: () => navigate('/payments') },
         { icon: Settings, label: 'Settings', action: () => navigate('/settings') },
       ],
     },
+    ...(isBusinessRole ? [{
+      title: 'Business',
+      items: [
+        { icon: isBusinessRole && activeRole === 'shop_owner' ? Store : Scissors, label: 'Go to Dashboard', action: () => navigate('/dashboard') },
+        ...(activeRole === 'shop_owner' ? [{ icon: Eye, label: 'Shop Visibility', action: () => toast.info('Visibility settings coming soon') }] : []),
+      ],
+    }] : []),
     {
       title: 'Role',
       items: [
-        ...(activeRole === 'barber' ? [{ icon: Scissors, label: 'Barber Dashboard', action: () => navigate('/dashboard') }] : []),
-        ...(activeRole === 'shop_owner' ? [{ icon: Store, label: 'Shop Dashboard', action: () => navigate('/shop-dashboard') }] : []),
         { icon: ArrowRightLeft, label: 'Switch Profile', action: () => setShowRoleSwitcher(true) },
       ],
     },
@@ -110,7 +115,9 @@ const ProfilePage = () => {
           <div className="flex items-center gap-4">
             <div className="relative">
               <div className="w-16 h-16 rounded-2xl gold-gradient flex items-center justify-center text-2xl font-bold text-primary-foreground">
-                {displayName.charAt(0).toUpperCase()}
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-16 h-16 rounded-2xl object-cover" />
+                ) : displayName.charAt(0).toUpperCase()}
               </div>
               <button className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                 <Camera size={12} className="text-primary-foreground" />
@@ -181,7 +188,6 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Version */}
         <p className="text-center text-[10px] text-muted-foreground/50 py-4">BookMyBarber v1.0.0</p>
       </div>
 

@@ -1,45 +1,31 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Calendar, User, Scissors, Store, Shield } from 'lucide-react';
+import { Home, Search, Calendar, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const BottomNav = () => {
   const location = useLocation();
   const { activeRole, profile } = useAuth();
 
+  // Hide on these paths
   const hiddenPaths = ['/login', '/signin', '/signup', '/verify', '/forgot-password', '/reset-password', '/welcome', '/booking/', '/payment/', '/barber-onboarding', '/shop-onboarding', '/chat', '/appointment-details'];
   if (location.pathname === '/' || hiddenPaths.some(p => location.pathname.startsWith(p))) return null;
 
-  const getTabs = () => {
-    switch (activeRole) {
-      case 'barber':
-        return [
-          { icon: Scissors, label: 'Dashboard', path: '/dashboard' },
-          { icon: Calendar, label: 'Bookings', path: '/appointments' },
-          { icon: User, label: 'Profile', path: '/profile' },
-        ];
-      case 'shop_owner':
-        return [
-          { icon: Store, label: 'Dashboard', path: '/shop-dashboard' },
-          { icon: Calendar, label: 'Bookings', path: '/appointments' },
-          { icon: User, label: 'Profile', path: '/profile' },
-        ];
-      case 'admin':
-        return [
-          { icon: Shield, label: 'Admin', path: '/admin' },
-          { icon: Home, label: 'Home', path: '/home' },
-          { icon: User, label: 'Profile', path: '/profile' },
-        ];
-      default:
-        return [
-          { icon: Home, label: 'Home', path: '/home' },
-          { icon: Search, label: 'Search', path: '/search' },
-          { icon: Calendar, label: 'Bookings', path: '/appointments' },
-          { icon: null, label: 'Profile', path: '/profile' },
-        ];
-    }
-  };
+  // Hide for barber/shop_owner — they use DashboardBottomNav
+  if ((activeRole === 'barber' || activeRole === 'shop_owner') && location.pathname.startsWith('/dashboard')) return null;
 
-  const tabs = getTabs();
+  // Only show customer nav for customer role or guest
+  if (activeRole === 'barber' || activeRole === 'shop_owner') {
+    // If on non-dashboard pages like /profile, /settings, etc. still show customer nav
+    if (!['/home', '/search', '/appointments', '/profile'].some(p => location.pathname.startsWith(p))) return null;
+  }
+
+  const tabs = [
+    { icon: Home, label: 'Home', path: '/home' },
+    { icon: Search, label: 'Search', path: '/search' },
+    { icon: Calendar, label: 'Bookings', path: '/appointments' },
+    { icon: null, label: 'Profile', path: '/profile' },
+  ];
+
   const initial = profile?.name?.charAt(0)?.toUpperCase() || 'U';
 
   return (

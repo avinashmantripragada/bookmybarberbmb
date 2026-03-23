@@ -27,11 +27,9 @@ import ManageProfilePage from "./pages/ManageProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import PaymentMethodsPage from "./pages/PaymentMethodsPage";
 import AboutPage from "./pages/AboutPage";
-import BarberDashboard from "./pages/BarberDashboard";
 import BarberOnboardingPage from "./pages/BarberOnboardingPage";
 import ShopOnboardingPage from "./pages/ShopOnboardingPage";
 import ShopPage from "./pages/ShopPage";
-import ShopOwnerDashboard from "./pages/ShopOwnerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import SearchPage from "./pages/SearchPage";
 import HelpSupportPage from "./pages/HelpSupportPage";
@@ -39,6 +37,12 @@ import FAQsPage from "./pages/FAQsPage";
 import ContactSupportPage from "./pages/ContactSupportPage";
 import ReportProblemPage from "./pages/ReportProblemPage";
 import NotFound from "./pages/NotFound";
+
+// Dashboard pages
+import DashboardHome from "./pages/dashboard/DashboardHome";
+import DashboardBookings from "./pages/dashboard/DashboardBookings";
+import DashboardShop from "./pages/dashboard/DashboardShop";
+import DashboardClients from "./pages/dashboard/DashboardClients";
 
 const queryClient = new QueryClient();
 
@@ -81,15 +85,21 @@ const App = () => {
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/payments" element={<PaymentMethodsPage />} />
                 <Route path="/about" element={<AboutPage />} />
-                <Route path="/dashboard" element={<BarberDashboard />} />
                 <Route path="/barber-onboarding" element={<BarberOnboardingPage />} />
                 <Route path="/shop-onboarding" element={<ShopOnboardingPage />} />
-                <Route path="/shop-dashboard" element={<ShopOwnerDashboard />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/help-support" element={<HelpSupportPage />} />
                 <Route path="/faqs" element={<FAQsPage />} />
                 <Route path="/contact-support" element={<ContactSupportPage />} />
                 <Route path="/report-problem" element={<ReportProblemPage />} />
+
+                {/* Dashboard routes for barber/shop owner */}
+                <Route path="/dashboard" element={<DashboardHome />} />
+                <Route path="/dashboard/bookings" element={<DashboardBookings />} />
+                <Route path="/dashboard/shop" element={<DashboardShop />} />
+                <Route path="/dashboard/clients" element={<DashboardClients />} />
+                <Route path="/shop-dashboard" element={<DashboardHome />} />
+
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <BottomNav />
