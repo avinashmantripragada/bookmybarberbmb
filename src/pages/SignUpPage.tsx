@@ -5,6 +5,7 @@ import { ArrowLeft, Eye, EyeOff, ChevronDown, Scissors, Store, User, Loader2 } f
 import AppLogo from '@/components/AppLogo';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { normalizeRequestedRole } from '@/lib/role-routing';
 
 const countryCodes = [
   { code: '+1', flag: '🇺🇸', name: 'US' },
@@ -22,12 +23,12 @@ type BarberType = 'independent' | 'shop-owner';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
-  const { signUp } = useAuth();
+  const { signUp, enterGuestMode, getDefaultRoute } = useAuth();
   const [searchParams] = useSearchParams();
-  const preselectedRole = searchParams.get('role') || '';
+  const preselectedRole = normalizeRequestedRole(searchParams.get('role'));
 
-  const [step, setStep] = useState(preselectedRole === 'barber' ? 2 : preselectedRole === 'customer' ? 3 : 1);
-  const [role, setRole] = useState<Role>(preselectedRole === 'barber' ? 'barber' : 'customer');
+  const [step, setStep] = useState(preselectedRole === 'owner' ? 2 : preselectedRole === 'customer' ? 3 : 1);
+  const [role, setRole] = useState<Role>(preselectedRole === 'owner' ? 'barber' : 'customer');
   const [barberType, setBarberType] = useState<BarberType | ''>('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -72,12 +73,14 @@ const SignUpPage = () => {
     }
 
     toast.success('Account created! Please check your email to verify.');
-    navigate('/signin');
+    navigate(`/signin?role=${getDbRole() === 'customer' ? 'customer' : 'owner'}`, { replace: true });
   };
 
   const handleGuest = () => {
+    const guestRole = role === 'customer' ? 'customer' : 'owner';
+    enterGuestMode(guestRole);
     toast.success('Continuing as guest');
-    navigate('/home');
+    navigate(getDefaultRoute(guestRole), { replace: true });
   };
 
   const handleBack = () => {
@@ -118,7 +121,7 @@ const SignUpPage = () => {
                 </div>
               </button>
               <button onClick={handleGuest} className="w-full h-12 rounded-2xl font-medium text-muted-foreground text-base hover:text-foreground transition-colors">Continue as Guest</button>
-              <p className="text-center text-sm text-muted-foreground">Already have an account?{' '}<button onClick={() => navigate('/signin')} className="text-primary font-medium">Sign In</button></p>
+              <p className="text-center text-sm text-muted-foreground">Already have an account?{' '}<button onClick={() => navigate(`/signin?role=${role === 'customer' ? 'customer' : 'owner'}`)} className="text-primary font-medium">Sign In</button></p>
             </motion.div>
           )}
 
@@ -190,7 +193,7 @@ const SignUpPage = () => {
                 </button>
 
                 <button onClick={handleGuest} className="w-full h-12 rounded-2xl font-medium text-muted-foreground text-base hover:text-foreground transition-colors">Continue as Guest</button>
-                <p className="text-center text-sm text-muted-foreground">Already have an account?{' '}<button onClick={() => navigate('/signin')} className="text-primary font-medium">Sign In</button></p>
+                <p className="text-center text-sm text-muted-foreground">Already have an account?{' '}<button onClick={() => navigate(`/signin?role=${role === 'customer' ? 'customer' : 'owner'}`)} className="text-primary font-medium">Sign In</button></p>
               </div>
             </motion.div>
           )}

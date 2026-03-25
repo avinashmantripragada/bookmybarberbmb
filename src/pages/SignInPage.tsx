@@ -1,25 +1,28 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLogo from '@/components/AppLogo';
+import { normalizeRequestedRole } from '@/lib/role-routing';
 
 const SignInPage = () => {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { signIn, getDefaultRoute } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const desiredRole = normalizeRequestedRole(searchParams.get('role')) ?? 'customer';
 
   const handleSubmit = async () => {
     if (!email.trim()) { toast.error('Enter your email'); return; }
     if (!password) { toast.error('Enter your password'); return; }
 
     setSubmitting(true);
-    const { error } = await signIn(email, password);
+    const { error } = await signIn(email, password, desiredRole);
     setSubmitting(false);
 
     if (error) {
@@ -28,7 +31,7 @@ const SignInPage = () => {
     }
 
     toast.success('Welcome back!');
-    navigate('/home');
+    navigate(getDefaultRoute(desiredRole), { replace: true });
   };
 
   return (
@@ -43,7 +46,7 @@ const SignInPage = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex flex-col items-center">
           <AppLogo size="md" />
           <h1 className="text-2xl font-bold text-foreground mt-4 mb-1">Welcome Back</h1>
-          <p className="text-sm text-muted-foreground">Sign in to your account</p>
+          <p className="text-sm text-muted-foreground">Sign in to your {desiredRole} account</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
@@ -66,7 +69,7 @@ const SignInPage = () => {
             {submitting ? <><Loader2 size={20} className="animate-spin" /> Signing in...</> : 'Sign In'}
           </button>
 
-          <p className="text-center text-sm text-muted-foreground">Don't have an account?{' '}<button onClick={() => navigate('/signup')} className="text-primary font-medium">Sign Up</button></p>
+          <p className="text-center text-sm text-muted-foreground">Don't have an account?{' '}<button onClick={() => navigate(`/signup?role=${desiredRole}`)} className="text-primary font-medium">Sign Up</button></p>
         </motion.div>
       </div>
     </div>

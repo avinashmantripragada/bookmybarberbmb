@@ -24,7 +24,14 @@ const DashboardHome = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setBookings([]);
+      setStats({ total: 0, completed: 0, upcoming: 0 });
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     fetchTodayData();
   }, [user]);
 

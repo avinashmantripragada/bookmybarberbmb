@@ -26,7 +26,14 @@ const DashboardClients = () => {
   const [showInvite, setShowInvite] = useState(false);
 
   useEffect(() => {
-    if (user) fetchClients();
+    if (!user) {
+      setClients([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    fetchClients();
   }, [user]);
 
   const fetchClients = async () => {

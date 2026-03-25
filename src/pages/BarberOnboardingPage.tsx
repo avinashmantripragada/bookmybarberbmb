@@ -12,7 +12,7 @@ interface ServiceEntry { name: string; price: string; duration: string; }
 
 const BarberOnboardingPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, switchRole, getDefaultRoute } = useAuth();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const totalSteps = 5;
@@ -56,6 +56,22 @@ const BarberOnboardingPage = () => {
 
       setSaving(true);
       try {
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('role', 'barber')
+          .maybeSingle();
+
+        if (!existingRole) {
+          const { error: roleError } = await supabase.from('user_roles').insert({
+            user_id: user.id,
+            role: 'barber',
+          });
+
+          if (roleError) throw roleError;
+        }
+
         // Create barber profile
         const { data: barber, error: barberError } = await supabase
           .from('barbers')
@@ -90,7 +106,8 @@ const BarberOnboardingPage = () => {
         }
 
         toast.success('Profile created! Welcome to BookMyBarber.');
-        navigate('/dashboard');
+        switchRole('owner');
+        navigate(getDefaultRoute('owner'), { replace: true });
       } catch (err: any) {
         toast.error(err.message || 'Failed to create profile');
       } finally {
