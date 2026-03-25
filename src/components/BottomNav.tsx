@@ -4,20 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const BottomNav = () => {
   const location = useLocation();
-  const { activeRole, profile } = useAuth();
+  const { appRole, profile } = useAuth();
 
   // Hide on these paths
   const hiddenPaths = ['/login', '/signin', '/signup', '/verify', '/forgot-password', '/reset-password', '/welcome', '/booking/', '/payment/', '/barber-onboarding', '/shop-onboarding', '/chat', '/appointment-details'];
   if (location.pathname === '/' || hiddenPaths.some(p => location.pathname.startsWith(p))) return null;
 
-  // Hide for barber/shop_owner — they use DashboardBottomNav
-  if ((activeRole === 'barber' || activeRole === 'shop_owner') && location.pathname.startsWith('/dashboard')) return null;
-
-  // Only show customer nav for customer role or guest
-  if (activeRole === 'barber' || activeRole === 'shop_owner') {
-    // If on non-dashboard pages like /profile, /settings, etc. still show customer nav
-    if (!['/home', '/search', '/appointments', '/profile'].some(p => location.pathname.startsWith(p))) return null;
-  }
+  if (appRole !== 'customer') return null;
 
   const tabs = [
     { icon: Home, label: 'Home', path: '/home' },

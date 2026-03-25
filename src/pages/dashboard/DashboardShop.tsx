@@ -29,7 +29,15 @@ const DashboardShop = () => {
   const [showAddService, setShowAddService] = useState(false);
 
   useEffect(() => {
-    if (user) fetchData();
+    if (!user) {
+      setServices([]);
+      setBarbers([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    fetchData();
   }, [user]);
 
   const getBarberIds = async () => {

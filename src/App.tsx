@@ -3,9 +3,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import SplashScreen from "@/components/SplashScreen";
+import { CustomerRoute, EntryRoute, OwnerRoute, SelectedRoleRoute } from "@/components/RoleRoute";
 
 // Pages
 import HomePage from "./pages/HomePage";
@@ -46,6 +47,57 @@ import DashboardClients from "./pages/dashboard/DashboardClients";
 
 const queryClient = new QueryClient();
 
+const AppShell = () => {
+  const { appRole, user } = useAuth();
+
+  return (
+    <BrowserRouter>
+      <div key={`${user?.id ?? 'anon'}-${appRole ?? 'public'}`} className="max-w-lg mx-auto relative">
+        <Routes>
+          <Route path="/" element={<EntryRoute><WelcomePage /></EntryRoute>} />
+          <Route path="/home" element={<CustomerRoute><HomePage /></CustomerRoute>} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/signin" element={<SignInPage />} />
+          <Route path="/verify" element={<VerifyPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/login" element={<SignInPage />} />
+          <Route path="/search" element={<CustomerRoute><SearchPage /></CustomerRoute>} />
+          <Route path="/barber/:id" element={<CustomerRoute><BarberProfilePage /></CustomerRoute>} />
+          <Route path="/shop/:id" element={<CustomerRoute><ShopPage /></CustomerRoute>} />
+          <Route path="/booking/:id" element={<CustomerRoute><BookingPage /></CustomerRoute>} />
+          <Route path="/payment/:id" element={<CustomerRoute><PaymentPage /></CustomerRoute>} />
+          <Route path="/appointments" element={<CustomerRoute><AppointmentsPage /></CustomerRoute>} />
+          <Route path="/appointment-details" element={<CustomerRoute><AppointmentDetailsPage /></CustomerRoute>} />
+          <Route path="/chat" element={<CustomerRoute><ChatPage /></CustomerRoute>} />
+          <Route path="/review" element={<CustomerRoute><ReviewPage /></CustomerRoute>} />
+          <Route path="/profile" element={<SelectedRoleRoute><ProfilePage /></SelectedRoleRoute>} />
+          <Route path="/manage-profile" element={<SelectedRoleRoute><ManageProfilePage /></SelectedRoleRoute>} />
+          <Route path="/settings" element={<SelectedRoleRoute><SettingsPage /></SelectedRoleRoute>} />
+          <Route path="/payments" element={<SelectedRoleRoute><PaymentMethodsPage /></SelectedRoleRoute>} />
+          <Route path="/about" element={<SelectedRoleRoute><AboutPage /></SelectedRoleRoute>} />
+          <Route path="/barber-onboarding" element={<SelectedRoleRoute><BarberOnboardingPage /></SelectedRoleRoute>} />
+          <Route path="/shop-onboarding" element={<SelectedRoleRoute><ShopOnboardingPage /></SelectedRoleRoute>} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/help-support" element={<SelectedRoleRoute><HelpSupportPage /></SelectedRoleRoute>} />
+          <Route path="/faqs" element={<SelectedRoleRoute><FAQsPage /></SelectedRoleRoute>} />
+          <Route path="/contact-support" element={<SelectedRoleRoute><ContactSupportPage /></SelectedRoleRoute>} />
+          <Route path="/report-problem" element={<SelectedRoleRoute><ReportProblemPage /></SelectedRoleRoute>} />
+
+          <Route path="/dashboard" element={<OwnerRoute><DashboardHome /></OwnerRoute>} />
+          <Route path="/dashboard/bookings" element={<OwnerRoute><DashboardBookings /></OwnerRoute>} />
+          <Route path="/dashboard/shop" element={<OwnerRoute><DashboardShop /></OwnerRoute>} />
+          <Route path="/dashboard/clients" element={<OwnerRoute><DashboardClients /></OwnerRoute>} />
+          <Route path="/shop-dashboard" element={<OwnerRoute><DashboardHome /></OwnerRoute>} />
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <BottomNav />
+      </div>
+    </BrowserRouter>
+  );
+};
+
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
 
@@ -60,51 +112,7 @@ const App = () => {
         <AuthProvider>
           <Sonner />
           <SplashScreen show={showSplash} />
-          <BrowserRouter>
-            <div className="max-w-lg mx-auto relative">
-              <Routes>
-                <Route path="/" element={<WelcomePage />} />
-                <Route path="/home" element={<HomePage />} />
-                <Route path="/signup" element={<SignUpPage />} />
-                <Route path="/signin" element={<SignInPage />} />
-                <Route path="/verify" element={<VerifyPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/login" element={<SignInPage />} />
-                <Route path="/search" element={<SearchPage />} />
-                <Route path="/barber/:id" element={<BarberProfilePage />} />
-                <Route path="/shop/:id" element={<ShopPage />} />
-                <Route path="/booking/:id" element={<BookingPage />} />
-                <Route path="/payment/:id" element={<PaymentPage />} />
-                <Route path="/appointments" element={<AppointmentsPage />} />
-                <Route path="/appointment-details" element={<AppointmentDetailsPage />} />
-                <Route path="/chat" element={<ChatPage />} />
-                <Route path="/review" element={<ReviewPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/manage-profile" element={<ManageProfilePage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/payments" element={<PaymentMethodsPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/barber-onboarding" element={<BarberOnboardingPage />} />
-                <Route path="/shop-onboarding" element={<ShopOnboardingPage />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/help-support" element={<HelpSupportPage />} />
-                <Route path="/faqs" element={<FAQsPage />} />
-                <Route path="/contact-support" element={<ContactSupportPage />} />
-                <Route path="/report-problem" element={<ReportProblemPage />} />
-
-                {/* Dashboard routes for barber/shop owner */}
-                <Route path="/dashboard" element={<DashboardHome />} />
-                <Route path="/dashboard/bookings" element={<DashboardBookings />} />
-                <Route path="/dashboard/shop" element={<DashboardShop />} />
-                <Route path="/dashboard/clients" element={<DashboardClients />} />
-                <Route path="/shop-dashboard" element={<DashboardHome />} />
-
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <BottomNav />
-            </div>
-          </BrowserRouter>
+          <AppShell />
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

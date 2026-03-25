@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { User, LogOut, ChevronRight, CreditCard, Camera, Loader2, ArrowRightLeft, Settings, Scissors, Store, Heart, Star, HelpCircle, Info, Eye, EyeOff } from 'lucide-react';
+import { User, LogOut, ChevronRight, CreditCard, Camera, Loader2, ArrowRightLeft, Settings, Scissors, Store, Heart, Star, HelpCircle, Info, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import DashboardBottomNav from '@/components/DashboardBottomNav';
+import { AppRole } from '@/lib/role-routing';
 
 const socialLinks = [
   { label: 'Instagram', url: '#', icon: '📸' },
@@ -16,41 +17,47 @@ const socialLinks = [
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, profile, roles, activeRole, signOut, loading, refreshProfile, switchRole } = useAuth();
+  const { user, profile, roles, appRole, ownerType, signOut, loading, switchRole, enterGuestMode, getDefaultRoute } = useAuth();
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
+  const [pendingRole, setPendingRole] = useState<AppRole | null>(null);
 
   const displayName = profile?.name || user?.user_metadata?.name || 'Guest';
   const displayEmail = profile?.email || user?.email || '';
 
-  const handleSwitchRole = async (role: string) => {
-    if (role === 'barber') {
-      const { data } = await supabase.from('barbers').select('id').eq('user_id', user?.id).single();
-      if (!data) {
+  const handleSwitchRole = (role: AppRole) => {
+    if (!user) {
+      setPendingRole(role);
+      return;
+    }
+
+    if (role === 'owner' && !roles.some((item) => item === 'barber' || item === 'shop_owner')) {
+      setShowRoleSwitcher(false);
+      toast.info('Set up your owner profile first');
+      navigate('/barber-onboarding');
+      return;
+    }
+
+    const switched = switchRole(role);
+    if (!switched) {
+      if (role === 'owner') {
         setShowRoleSwitcher(false);
-        toast.info('Complete your barber profile first');
-        navigate('/barber-onboarding');
-        return;
+        toast.info('Owner access is not available on this account yet');
       }
+      return;
     }
-    if (role === 'shop_owner') {
-      const { data } = await supabase.from('shops').select('id').eq('owner_id', user?.id).single();
-      if (!data) {
-        setShowRoleSwitcher(false);
-        toast.info('Complete your shop setup first');
-        navigate('/shop-onboarding');
-        return;
-      }
-    }
-    if (!roles.includes(role)) {
-      await supabase.from('user_roles').insert({ user_id: user!.id, role: role as any });
-      await refreshProfile();
-    }
-    switchRole(role);
+
     setShowRoleSwitcher(false);
-    toast.success(`Switched to ${role.replace('_', ' ')} mode`);
-    if (role === 'customer') navigate('/home');
-    else if (role === 'barber' || role === 'shop_owner') navigate('/dashboard');
-    else if (role === 'admin') navigate('/admin');
+    setPendingRole(null);
+    toast.success(`Switched to ${role} mode`);
+    navigate(getDefaultRoute(role), { replace: true });
+  };
+
+  const handleGuestRole = () => {
+    if (!pendingRole) return;
+    enterGuestMode(pendingRole);
+    setShowRoleSwitcher(false);
+    toast.success(`Continuing as ${pendingRole}`);
+    navigate(getDefaultRoute(pendingRole), { replace: true });
   };
 
   const handleLogout = async () => {
@@ -61,28 +68,34 @@ const ProfilePage = () => {
 
   const roleLabels: Record<string, string> = {
     customer: '👤 Customer',
-    barber: '✂️ Barber',
-    shop_owner: '🏪 Shop Owner',
+    owner: '🏪 Owner',
+    barber: '✂️ Owner',
+    shop_owner: '🏪 Owner',
     admin: '🛡️ Admin',
   };
 
-  const isBusinessRole = activeRole === 'barber' || activeRole === 'shop_owner';
+  const isOwnerMode = appRole === 'owner';
+  const currentRoleLabel = appRole === 'owner'
+    ? roleLabels.owner
+    : appRole === 'customer'
+      ? roleLabels.customer
+      : 'Guest';
 
   const menuSections = [
     {
       title: 'Account',
       items: [
         { icon: User, label: 'Manage Profile', action: () => navigate('/manage-profile') },
-        ...(!isBusinessRole ? [{ icon: Heart, label: 'Saved / Favorites', action: () => toast.info('Coming soon') }] : []),
+        ...(!isOwnerMode ? [{ icon: Heart, label: 'Saved / Favorites', action: () => toast.info('Coming soon') }] : []),
         { icon: CreditCard, label: 'Payments', action: () => navigate('/payments') },
         { icon: Settings, label: 'Settings', action: () => navigate('/settings') },
       ],
     },
-    ...(isBusinessRole ? [{
+    ...(isOwnerMode ? [{
       title: 'Business',
       items: [
-        { icon: isBusinessRole && activeRole === 'shop_owner' ? Store : Scissors, label: 'Go to Dashboard', action: () => navigate('/dashboard') },
-        ...(activeRole === 'shop_owner' ? [{ icon: Eye, label: 'Shop Visibility', action: () => toast.info('Visibility settings coming soon') }] : []),
+        { icon: ownerType === 'shop_owner' ? Store : Scissors, label: 'Go to Dashboard', action: () => navigate(getDefaultRoute('owner')) },
+        ...(ownerType === 'shop_owner' ? [{ icon: Eye, label: 'Shop Visibility', action: () => toast.info('Visibility settings coming soon') }] : []),
       ],
     }] : []),
     {
@@ -126,9 +139,9 @@ const ProfilePage = () => {
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-semibold text-foreground truncate">{displayName}</h2>
               <p className="text-sm text-muted-foreground truncate">{displayEmail}</p>
-              {activeRole && (
+              {appRole && (
                 <span className="inline-flex items-center gap-1 text-xs text-primary font-medium capitalize mt-0.5">
-                  {roleLabels[activeRole] || activeRole.replace('_', ' ')}
+                  {currentRoleLabel}
                 </span>
               )}
             </div>
@@ -196,35 +209,52 @@ const ProfilePage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-8">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card p-6 w-full max-w-sm">
             <h3 className="text-lg font-semibold text-foreground mb-1">Switch Profile</h3>
-            <p className="text-xs text-muted-foreground mb-4">Current: {roleLabels[activeRole || ''] || activeRole}</p>
-            <div className="space-y-2">
-              <button onClick={() => handleSwitchRole('customer')}
-                className={`w-full p-4 rounded-xl text-left text-sm font-medium transition-all ${
-                  activeRole === 'customer' ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary/80'
-                }`}>
-                👤 Customer
-              </button>
-              {roles.filter(r => r !== 'customer').map(r => (
-                <button key={r} onClick={() => handleSwitchRole(r)}
+            <p className="text-xs text-muted-foreground mb-4">Current: {currentRoleLabel}</p>
+
+            {pendingRole && !user ? (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Choose how you want to continue in {pendingRole} mode.</p>
+                <button onClick={() => navigate(`/signin?role=${pendingRole}`)}
+                  className="w-full p-4 rounded-xl text-left text-sm font-medium gold-gradient text-primary-foreground">
+                  Login
+                </button>
+                <button onClick={() => navigate(`/signup?role=${pendingRole}`)}
+                  className="w-full p-4 rounded-xl text-left text-sm font-medium bg-secondary text-foreground hover:bg-secondary/80">
+                  Sign Up
+                </button>
+                <button onClick={handleGuestRole}
+                  className="w-full p-4 rounded-xl text-left text-sm font-medium bg-secondary text-foreground hover:bg-secondary/80">
+                  Continue as Guest
+                </button>
+                <button onClick={() => setPendingRole(null)} className="w-full mt-2 h-10 bg-secondary/50 rounded-xl text-sm text-muted-foreground">
+                  Back
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <button onClick={() => handleSwitchRole('customer')}
                   className={`w-full p-4 rounded-xl text-left text-sm font-medium transition-all ${
-                    r === activeRole ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary/80'
+                    appRole === 'customer' ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary/80'
                   }`}>
-                  {roleLabels[r] || r.replace('_', ' ')}
+                  👤 Customer
                 </button>
-              ))}
-              {!roles.includes('barber') && !roles.includes('shop_owner') && (
-                <button onClick={() => { setShowRoleSwitcher(false); navigate('/signup?role=barber'); }}
-                  className="w-full p-4 rounded-xl text-left text-sm font-medium bg-secondary/50 text-muted-foreground border border-dashed border-border">
-                  ➕ Become a Barber / Shop Owner
+                <button onClick={() => handleSwitchRole('owner')}
+                  className={`w-full p-4 rounded-xl text-left text-sm font-medium transition-all ${
+                    appRole === 'owner' ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary/80'
+                  }`}>
+                  🏪 Owner
                 </button>
-              )}
-            </div>
-            <button onClick={() => setShowRoleSwitcher(false)} className="w-full mt-4 h-10 bg-secondary rounded-xl text-sm text-muted-foreground">
-              Cancel
+              </div>
+            )}
+
+            <button onClick={() => { setShowRoleSwitcher(false); setPendingRole(null); }} className="w-full mt-4 h-10 bg-secondary rounded-xl text-sm text-muted-foreground">
+              {pendingRole && !user ? 'Close' : 'Cancel'}
             </button>
           </motion.div>
         </div>
       )}
+
+      {appRole === 'owner' && <DashboardBottomNav />}
     </div>
   );
 };

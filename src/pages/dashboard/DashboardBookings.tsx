@@ -29,7 +29,14 @@ const DashboardBookings = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) fetchBookings();
+    if (!user) {
+      setBookings([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    fetchBookings();
   }, [user]);
 
   const fetchBookings = async () => {

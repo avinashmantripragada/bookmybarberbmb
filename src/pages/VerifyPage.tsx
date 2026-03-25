@@ -3,10 +3,13 @@ import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { normalizeRequestedRole } from '@/lib/role-routing';
 
 const VerifyPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setRolePreference, getDefaultRoute } = useAuth();
   const state = location.state as { phone?: string; role?: string } | null;
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -31,11 +34,9 @@ const VerifyPage = () => {
     const code = otp.join('');
     if (code.length < 6) { toast.error('Enter the full 6-digit code'); return; }
     toast.success('Phone verified!');
-    if (state?.role === 'barber') {
-      navigate('/barber-onboarding');
-    } else {
-      navigate('/home');
-    }
+    const nextRole = normalizeRequestedRole(state?.role) ?? 'customer';
+    setRolePreference(nextRole);
+    navigate(getDefaultRoute(nextRole), { replace: true });
   };
 
   return (

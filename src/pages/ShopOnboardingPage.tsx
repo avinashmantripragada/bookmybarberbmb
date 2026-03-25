@@ -13,7 +13,7 @@ interface ServiceEntry { name: string; price: string; duration: string; }
 
 const ShopOnboardingPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, switchRole, getDefaultRoute } = useAuth();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const totalSteps = 4;
@@ -42,6 +42,22 @@ const ShopOnboardingPage = () => {
 
       setSaving(true);
       try {
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('role', 'shop_owner')
+          .maybeSingle();
+
+        if (!existingRole) {
+          const { error: roleError } = await supabase.from('user_roles').insert({
+            user_id: user.id,
+            role: 'shop_owner',
+          });
+
+          if (roleError) throw roleError;
+        }
+
         const openHour = hours.find(h => h.enabled);
         const { data: shop, error: shopError } = await supabase
           .from('shops')
@@ -94,7 +110,8 @@ const ShopOnboardingPage = () => {
         }
 
         toast.success('Shop created! Welcome to BookMyBarber.');
-        navigate('/shop-dashboard');
+        switchRole('owner');
+        navigate(getDefaultRoute('owner'), { replace: true });
       } catch (err: any) {
         toast.error(err.message || 'Failed to create shop');
       } finally {

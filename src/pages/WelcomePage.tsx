@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import AppLogo from '@/components/AppLogo';
+import { useAuth } from '@/contexts/AuthContext';
 
 const WelcomePage = () => {
   const navigate = useNavigate();
+  const { enterGuestMode, getDefaultRoute } = useAuth();
+
+  const handleGuest = () => {
+    enterGuestMode('customer');
+    navigate(getDefaultRoute('customer'), { replace: true });
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-8">
@@ -41,13 +48,13 @@ const WelcomePage = () => {
         className="w-full space-y-3"
       >
         <button
-          onClick={() => navigate('/signin')}
+          onClick={() => navigate('/signin?role=customer')}
           className="w-full h-14 gold-gradient rounded-2xl font-semibold text-primary-foreground text-lg active:scale-[0.97] transition-transform"
         >
           Login
         </button>
         <button
-          onClick={() => navigate('/signup')}
+          onClick={() => navigate('/signup?role=customer')}
           className="w-full h-14 bg-secondary rounded-2xl font-semibold text-foreground text-lg active:scale-[0.97] transition-transform border border-border/50"
         >
           Sign Up
@@ -61,7 +68,7 @@ const WelcomePage = () => {
         className="mt-8"
       >
         <button
-          onClick={() => navigate('/home')}
+          onClick={handleGuest}
           className="text-muted-foreground text-sm font-medium hover:text-foreground transition-colors"
         >
           Continue as Guest
