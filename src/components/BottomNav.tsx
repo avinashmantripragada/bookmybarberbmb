@@ -4,13 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const BottomNav = () => {
   const location = useLocation();
-  const { appRole, profile } = useAuth();
+  const { activeProfile, profile } = useAuth();
 
-  // Hide on these paths
   const hiddenPaths = ['/login', '/signin', '/signup', '/verify', '/forgot-password', '/reset-password', '/welcome', '/booking/', '/payment/', '/barber-onboarding', '/shop-onboarding', '/chat', '/appointment-details'];
   if (location.pathname === '/' || hiddenPaths.some(p => location.pathname.startsWith(p))) return null;
 
-  if (appRole !== 'customer') return null;
+  // Only show for customer profile
+  if (activeProfile !== 'customer') return null;
 
   const tabs = [
     { icon: Home, label: 'Home', path: '/home' },
@@ -27,22 +27,13 @@ const BottomNav = () => {
         {tabs.map(({ icon: Icon, label, path }) => {
           const active = location.pathname === path;
           return (
-            <Link
-              key={path}
-              to={path}
-              className={`flex flex-col items-center gap-1 px-4 py-2 transition-all duration-200 ${
-                active ? 'text-primary scale-105' : 'text-muted-foreground'
-              }`}
-            >
+            <Link key={path} to={path}
+              className={`flex flex-col items-center gap-1 px-4 py-2 transition-all duration-200 ${active ? 'text-primary scale-105' : 'text-muted-foreground'}`}>
               {Icon ? (
                 <Icon size={22} strokeWidth={active ? 2.5 : 1.5} />
               ) : (
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  active ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-muted-foreground'
-                }`}>
-                  {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" />
-                  ) : initial}
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${active ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
+                  {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" /> : initial}
                 </div>
               )}
               <span className="text-[10px] font-medium">{label}</span>

@@ -13,7 +13,7 @@ interface ServiceEntry { name: string; price: string; duration: string; }
 
 const ShopOnboardingPage = () => {
   const navigate = useNavigate();
-  const { user, switchRole, getDefaultRoute } = useAuth();
+  const { user, switchProfile, getHomeRoute, refreshProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const totalSteps = 4;
@@ -42,6 +42,20 @@ const ShopOnboardingPage = () => {
 
       setSaving(true);
       try {
+        // Check if shop already exists
+        const { data: existingShop } = await supabase
+          .from('shops')
+          .select('id')
+          .eq('owner_id', user.id)
+          .maybeSingle();
+
+        if (existingShop) {
+          toast.error('Shop owner profile already exists');
+          setSaving(false);
+          return;
+        }
+
+        // Add shop_owner role
         const { data: existingRole } = await supabase
           .from('user_roles')
           .select('id')
@@ -54,7 +68,6 @@ const ShopOnboardingPage = () => {
             user_id: user.id,
             role: 'shop_owner',
           });
-
           if (roleError) throw roleError;
         }
 
@@ -78,7 +91,6 @@ const ShopOnboardingPage = () => {
 
         if (shopError) throw shopError;
 
-        // Create barbers
         const validBarbers = barbers.filter(b => b.name.trim());
         let barberIds: string[] = [];
         if (validBarbers.length > 0) {
@@ -95,10 +107,9 @@ const ShopOnboardingPage = () => {
           barberIds = (createdBarbers || []).map(b => b.id);
         }
 
-        // Create services for the first barber
         const validServices = services.filter(s => s.name.trim() && s.price);
         if (validServices.length > 0 && barberIds.length > 0) {
-          const { error: svcError } = await supabase.from('services').insert(
+          await supabase.from('services').insert(
             validServices.map(s => ({
               barber_id: barberIds[0],
               service_name: s.name,
@@ -106,12 +117,12 @@ const ShopOnboardingPage = () => {
               duration: parseInt(s.duration) || 30,
             }))
           );
-          if (svcError) throw svcError;
         }
 
-        toast.success('Shop created! Welcome to BookMyBarber.');
-        switchRole('owner');
-        navigate(getDefaultRoute('owner'), { replace: true });
+        toast.success('Shop created!');
+        await refreshProfile();
+        switchProfile('shop_owner');
+        navigate(getHomeRoute('shop_owner'), { replace: true });
       } catch (err: any) {
         toast.error(err.message || 'Failed to create shop');
       } finally {
@@ -174,7 +185,6 @@ const ShopOnboardingPage = () => {
               ))}
             </motion.div>
           )}
-
           {step === 2 && (
             <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <p className="text-sm text-muted-foreground">Add barbers who work at your shop.</p>
@@ -197,7 +207,6 @@ const ShopOnboardingPage = () => {
               <button onClick={() => setBarbers([...barbers, { name: '', phone: '', experience: '' }])} className="w-full h-12 border-2 border-dashed border-border rounded-2xl text-sm text-muted-foreground flex items-center justify-center gap-2"><Plus size={16} /> Add Another Barber</button>
             </motion.div>
           )}
-
           {step === 3 && (
             <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <p className="text-sm text-muted-foreground">Add the services your shop offers.</p>
@@ -223,10 +232,9 @@ const ShopOnboardingPage = () => {
               <button onClick={() => setServices([...services, { name: '', price: '', duration: '30' }])} className="w-full h-12 border-2 border-dashed border-border rounded-2xl text-sm text-muted-foreground flex items-center justify-center gap-2"><Plus size={16} /> Add Service</button>
             </motion.div>
           )}
-
           {step === 4 && (
             <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-              <p className="text-sm text-muted-foreground">Upload photos of your shop to attract customers.</p>
+              <p className="text-sm text-muted-foreground">Upload photos of your shop.</p>
               <div className="grid grid-cols-3 gap-3">
                 {Array.from({ length: galleryCount }, (_, i) => (
                   <div key={i} className="aspect-square rounded-2xl bg-secondary flex items-center justify-center overflow-hidden"><div className="w-full h-full gold-gradient opacity-20" /></div>
@@ -236,7 +244,7 @@ const ShopOnboardingPage = () => {
                   <Camera size={24} className="text-muted-foreground" /><span className="text-xs text-muted-foreground">Add</span>
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground text-center">You can add more photos later from your dashboard.</p>
+              <p className="text-xs text-muted-foreground text-center">You can add more later from your dashboard.</p>
             </motion.div>
           )}
         </AnimatePresence>
