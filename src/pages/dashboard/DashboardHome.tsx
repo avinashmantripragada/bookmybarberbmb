@@ -179,7 +179,8 @@ const DashboardHome = () => {
             <div className="space-y-2">
               {bookings.map((b, i) => (
                 <motion.div key={b.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                  className="glass-card p-4">
+                  onClick={() => navigate(`/appointment-details?id=${b.id}`)}
+                  className="glass-card p-4 cursor-pointer active:scale-[0.98] transition-transform">
                   <div className="flex items-center gap-4">
                     <div className="text-center min-w-[50px]">
                       <p className="text-sm font-semibold text-foreground">{b.time}</p>
