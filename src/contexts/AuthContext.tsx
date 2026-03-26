@@ -1,14 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
-import {
-  AppRole,
-  OwnerType,
-  getDefaultRouteForAppRole,
-  getOwnerType,
-  hasOwnerAccess,
-  isOwnerBackendRole,
-} from '@/lib/role-routing';
+import { ActiveProfile, isActiveProfile, getHomeRoute, dbRoleToProfile } from '@/lib/role-routing';
 
 interface Profile {
   id: string;
@@ -24,21 +17,20 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   roles: string[];
-  activeRole: string | null;
-  appRole: AppRole | null;
-  ownerType: OwnerType | null;
+  activeProfile: ActiveProfile | null;
   isGuest: boolean;
-  hasSelectedRole: boolean;
+  hasSelectedProfile: boolean;
   loading: boolean;
-  signUp: (email: string, password: string, name: string, phone: string, role: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string, desiredRole?: AppRole) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, name: string, phone: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-  switchRole: (role: AppRole) => boolean;
-  enterGuestMode: (role: AppRole) => void;
+  switchProfile: (profile: ActiveProfile) => boolean;
+  enterGuestMode: (profile: ActiveProfile) => void;
   clearGuestMode: () => void;
-  setRolePreference: (role: AppRole) => void;
-  getDefaultRoute: (role?: AppRole | null) => string;
+  setProfilePreference: (profile: ActiveProfile) => void;
+  getHomeRoute: (profile?: ActiveProfile | null) => string;
+  hasProfile: (profile: ActiveProfile) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,71 +41,51 @@ export const useAuth = () => {
   return ctx;
 };
 
+const ACTIVE_PROFILE_KEY = 'bmb_active_profile_';
+const GUEST_PROFILE_KEY = 'bmb_guest_profile';
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
-  const [activeRole, setActiveRole] = useState<string | null>(null);
-  const [appRole, setAppRole] = useState<AppRole | null>(null);
-  const [ownerType, setOwnerType] = useState<OwnerType | null>(null);
+  const [activeProfile, setActiveProfile] = useState<ActiveProfile | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const ROLE_STATE_VERSION_KEY = 'bmb_role_state_version';
-  const ROLE_STATE_VERSION = '2026-03-25-role-fix-v1';
-  const GUEST_ROLE_KEY = 'bmb_guest_role';
-  const PENDING_ROLE_KEY = 'bmb_pending_app_role';
-  const APP_ROLE_KEY_PREFIX = 'bmb_app_role_';
-  const OWNER_TYPE_KEY_PREFIX = 'bmb_owner_type_';
+  const hasProfile = (p: ActiveProfile): boolean => {
+    if (p === 'customer') return true; // every user is a customer
+    if (p === 'shop_owner') return roles.includes('shop_owner');
+    if (p === 'independent_barber') return roles.includes('barber');
+    return false;
+  };
 
-  const isAppRole = (value: string | null): value is AppRole => value === 'customer' || value === 'owner';
-
-  const getDefaultRoute = (role?: AppRole | null) => getDefaultRouteForAppRole(role ?? appRole);
-
-  const applyGuestRole = (role: AppRole) => {
+  const applyGuestProfile = (p: ActiveProfile) => {
     setIsGuest(true);
-    setAppRole(role);
-    setOwnerType(role === 'owner' ? 'barber' : null);
-    setActiveRole(role === 'owner' ? 'barber' : 'customer');
-    sessionStorage.setItem(GUEST_ROLE_KEY, role);
-    sessionStorage.removeItem(PENDING_ROLE_KEY);
+    setActiveProfile(p);
+    sessionStorage.setItem(GUEST_PROFILE_KEY, p);
   };
 
-  const applyAuthenticatedRole = (userId: string, nextAppRole: AppRole, nextOwnerType: OwnerType | null) => {
+  const applyAuthProfile = (userId: string, p: ActiveProfile) => {
     setIsGuest(false);
-    setAppRole(nextAppRole);
-    setOwnerType(nextOwnerType);
-    setActiveRole(nextAppRole === 'owner' ? nextOwnerType ?? 'barber' : 'customer');
-    localStorage.setItem(`${APP_ROLE_KEY_PREFIX}${userId}`, nextAppRole);
-
-    if (nextOwnerType) {
-      localStorage.setItem(`${OWNER_TYPE_KEY_PREFIX}${userId}`, nextOwnerType);
-    } else {
-      localStorage.removeItem(`${OWNER_TYPE_KEY_PREFIX}${userId}`);
-    }
-
-    sessionStorage.removeItem(GUEST_ROLE_KEY);
-    sessionStorage.removeItem(PENDING_ROLE_KEY);
+    setActiveProfile(p);
+    localStorage.setItem(`${ACTIVE_PROFILE_KEY}${userId}`, p);
+    sessionStorage.removeItem(GUEST_PROFILE_KEY);
   };
 
-  const restoreSignedOutRoleState = () => {
+  const restoreSignedOut = () => {
     setProfile(null);
     setRoles([]);
-
-    const guestRole = sessionStorage.getItem(GUEST_ROLE_KEY);
-    if (isAppRole(guestRole)) {
-      applyGuestRole(guestRole);
+    const guestProfile = sessionStorage.getItem(GUEST_PROFILE_KEY);
+    if (isActiveProfile(guestProfile)) {
+      applyGuestProfile(guestProfile);
       return;
     }
-
     setIsGuest(false);
-    setAppRole(null);
-    setOwnerType(null);
-    setActiveRole(null);
+    setActiveProfile(null);
   };
 
-  const fetchProfile = async (userId: string) => {
+  const fetchUserData = async (userId: string) => {
     const { data: profileData } = await supabase
       .from('profiles')
       .select('*')
@@ -128,22 +100,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select('role')
       .eq('user_id', userId);
 
-    const userRoles = Array.from(new Set((roleData || []).map((role) => role.role as string)));
+    const userRoles = Array.from(new Set((roleData || []).map((r) => r.role as string)));
     setRoles(userRoles);
 
-    const pendingRole = sessionStorage.getItem(PENDING_ROLE_KEY);
-    const storedRole = localStorage.getItem(`${APP_ROLE_KEY_PREFIX}${userId}`);
-    const preferredRole = isAppRole(pendingRole)
-      ? pendingRole
-      : isAppRole(storedRole)
-        ? storedRole
-        : 'customer';
+    // Determine active profile: stored preference > last used > customer
+    const stored = localStorage.getItem(`${ACTIVE_PROFILE_KEY}${userId}`);
+    if (isActiveProfile(stored) && canUseProfile(stored, userRoles)) {
+      applyAuthProfile(userId, stored);
+    } else {
+      applyAuthProfile(userId, 'customer');
+    }
+  };
 
-    const nextAppRole: AppRole = preferredRole === 'owner' && hasOwnerAccess(userRoles) ? 'owner' : 'customer';
-    const savedOwnerType = localStorage.getItem(`${OWNER_TYPE_KEY_PREFIX}${userId}`);
-    const nextOwnerType = nextAppRole === 'owner' ? getOwnerType(userRoles, savedOwnerType) : null;
-
-    applyAuthenticatedRole(userId, nextAppRole, nextOwnerType);
+  const canUseProfile = (p: ActiveProfile, userRoles: string[]): boolean => {
+    if (p === 'customer') return true;
+    if (p === 'shop_owner') return userRoles.includes('shop_owner');
+    if (p === 'independent_barber') return userRoles.includes('barber');
+    return false;
   };
 
   const ensureProfile = async (currentUser: User) => {
@@ -161,78 +134,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         phone: currentUser.user_metadata?.phone || '',
       });
 
-      const userRole = currentUser.user_metadata?.role || 'customer';
+      // Always create customer role
       const { data: existingRoles } = await supabase
         .from('user_roles')
         .select('id, role')
         .eq('user_id', currentUser.id);
 
-      const hasRequestedRole = (existingRoles || []).some((item) => item.role === userRole);
-      if (!hasRequestedRole) {
+      const hasCustomer = (existingRoles || []).some((item) => item.role === 'customer');
+      if (!hasCustomer) {
         await supabase.from('user_roles').insert({
           user_id: currentUser.id,
-          role: userRole as any,
+          role: 'customer' as any,
         });
       }
     }
 
-    await fetchProfile(currentUser.id);
+    await fetchUserData(currentUser.id);
   };
 
-  const setRolePreference = (role: AppRole) => {
-    setIsGuest(false);
-    setAppRole(role);
-    setOwnerType(role === 'owner' ? ownerType ?? 'barber' : null);
-    setActiveRole(role === 'owner' ? ownerType ?? 'barber' : 'customer');
-    sessionStorage.setItem(PENDING_ROLE_KEY, role);
-    sessionStorage.removeItem(GUEST_ROLE_KEY);
-  };
-
-  const enterGuestMode = (role: AppRole) => {
+  const enterGuestMode = (p: ActiveProfile) => {
     setSession(null);
     setUser(null);
-    applyGuestRole(role);
+    applyGuestProfile(p);
   };
 
   const clearGuestMode = () => {
-    sessionStorage.removeItem(GUEST_ROLE_KEY);
+    sessionStorage.removeItem(GUEST_PROFILE_KEY);
     if (!user) {
       setIsGuest(false);
-      setAppRole(null);
-      setOwnerType(null);
-      setActiveRole(null);
+      setActiveProfile(null);
     }
   };
 
-  const switchRole = (role: AppRole) => {
-    if (role === 'customer') {
-      if (user) applyAuthenticatedRole(user.id, 'customer', null);
-      else applyGuestRole('customer');
-      return true;
-    }
-
+  const switchProfile = (p: ActiveProfile): boolean => {
     if (!user) {
-      applyGuestRole('owner');
+      applyGuestProfile(p);
       return true;
     }
-
-    const nextOwnerType = getOwnerType(roles, ownerType);
-    if (!nextOwnerType || !roles.some((roleItem) => isOwnerBackendRole(roleItem))) {
-      return false;
-    }
-
-    applyAuthenticatedRole(user.id, 'owner', nextOwnerType);
+    if (!canUseProfile(p, roles)) return false;
+    applyAuthProfile(user.id, p);
     return true;
   };
 
-  useEffect(() => {
-    const storedVersion = localStorage.getItem(ROLE_STATE_VERSION_KEY);
-    if (storedVersion !== ROLE_STATE_VERSION) {
-      sessionStorage.removeItem(GUEST_ROLE_KEY);
-      sessionStorage.removeItem(PENDING_ROLE_KEY);
-      localStorage.setItem(ROLE_STATE_VERSION_KEY, ROLE_STATE_VERSION);
+  const setProfilePreference = (p: ActiveProfile) => {
+    setIsGuest(false);
+    setActiveProfile(p);
+    if (user) {
+      localStorage.setItem(`${ACTIVE_PROFILE_KEY}${user.id}`, p);
     }
+  };
 
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
         setSession(newSession);
@@ -245,7 +197,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setLoading(false);
           }, 0);
         } else {
-          restoreSignedOutRoleState();
+          restoreSignedOut();
           setLoading(false);
         }
       }
@@ -258,7 +210,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (existingSession?.user) {
         await ensureProfile(existingSession.user);
       } else {
-        restoreSignedOutRoleState();
+        restoreSignedOut();
       }
 
       setLoading(false);
@@ -267,43 +219,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, name: string, phone: string, userRole: string) => {
+  const signUp = async (email: string, password: string, name: string, phone: string) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name, phone, role: userRole },
+        data: { name, phone, role: 'customer' },
         emailRedirectTo: window.location.origin,
       },
     });
     return { error };
   };
 
-  const signIn = async (email: string, password: string, desiredRole: AppRole = 'customer') => {
-    setRolePreference(desiredRole);
+  const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };
 
   const signOut = async () => {
-    sessionStorage.removeItem(GUEST_ROLE_KEY);
-    sessionStorage.removeItem(PENDING_ROLE_KEY);
+    sessionStorage.removeItem(GUEST_PROFILE_KEY);
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setProfile(null);
     setRoles([]);
-    setActiveRole(null);
-    setAppRole(null);
-    setOwnerType(null);
+    setActiveProfile(null);
     setIsGuest(false);
   };
 
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (user) await fetchUserData(user.id);
   };
 
-  const hasSelectedRole = appRole !== null;
+  const hasSelectedProfile = activeProfile !== null;
 
   return (
     <AuthContext.Provider value={{
@@ -311,21 +259,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       session,
       profile,
       roles,
-      activeRole,
-      appRole,
-      ownerType,
+      activeProfile,
       isGuest,
-      hasSelectedRole,
+      hasSelectedProfile,
       loading,
       signUp,
       signIn,
       signOut,
       refreshProfile,
-      switchRole,
+      switchProfile,
       enterGuestMode,
       clearGuestMode,
-      setRolePreference,
-      getDefaultRoute,
+      setProfilePreference,
+      getHomeRoute: (p?: ActiveProfile | null) => getHomeRoute(p ?? activeProfile),
+      hasProfile,
     }}>
       {children}
     </AuthContext.Provider>
