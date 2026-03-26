@@ -180,7 +180,8 @@ const DashboardBookings = () => {
             ) : (
               (viewMode === 'calendar' ? dateBookings : filteredBookings).map((b, i) => (
                 <motion.div key={b.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                  className="glass-card p-4">
+                  onClick={() => navigate(`/appointment-details?id=${b.id}`)}
+                  className="glass-card p-4 cursor-pointer active:scale-[0.98] transition-transform">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground text-sm truncate">{b.customerName}</p>
