@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit2, Trash2, Users, BarChart3, Loader2, ToggleLeft, ToggleRight, Clock, Star } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
 import DashboardHeader from '@/components/DashboardHeader';
+import AddBarberModal from '@/components/AddBarberModal';
 
 type ShopTab = 'services' | 'barbers' | 'insights';
 
@@ -14,12 +16,15 @@ interface BarberItem { id: string; name: string; profile_image: string | null; e
 
 const DashboardShop = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<ShopTab>('services');
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [barbers, setBarbers] = useState<BarberItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [insightPeriod, setInsightPeriod] = useState<'today' | 'weekly' | 'monthly'>('today');
   const [insights, setInsights] = useState({ bookings: 0, completed: 0, cancelled: 0, revenue: 0, clients: 0, rating: 0 });
+  const [showAddBarber, setShowAddBarber] = useState(false);
+  const [shopId, setShopId] = useState<string | null>(null);
 
   // Edit service modal state
   const [editingSvc, setEditingSvc] = useState<ServiceItem | null>(null);
@@ -43,6 +48,7 @@ const DashboardShop = () => {
   const getBarberIds = async () => {
     const { data: myBarber } = await supabase.from('barbers').select('id').eq('user_id', user!.id);
     const { data: shops } = await supabase.from('shops').select('id').eq('owner_id', user!.id);
+    if (shops?.length) setShopId(shops[0].id);
     const ids = (myBarber || []).map(b => b.id);
     if (shops?.length) {
       const { data: shopBarbers } = await supabase.from('barbers').select('id, name, profile_image, experience_years, phone, rating').in('shop_id', shops.map(s => s.id));
@@ -242,6 +248,11 @@ const DashboardShop = () => {
                     <p className="text-sm text-muted-foreground">No barbers yet</p>
                   </div>
                 )}
+                <button onClick={() => setShowAddBarber(true)}
+                  className="w-full h-12 border-2 border-dashed border-border rounded-2xl text-sm text-muted-foreground flex items-center justify-center gap-2">
+                  <Plus size={16} /> Add Barber
+                </button>
+                {shopId && <AddBarberModal open={showAddBarber} shopId={shopId} onClose={() => setShowAddBarber(false)} onSaved={fetchData} />}
               </div>
             )}
 
@@ -265,7 +276,11 @@ const DashboardShop = () => {
                 <div className="grid grid-cols-2 gap-3">
                   {insightCards.map((c, i) => (
                     <motion.div key={c.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
-                      className="glass-card p-4 text-center">
+                      onClick={() => {
+                        if (c.label === 'Bookings' || c.label === 'Completed' || c.label === 'Cancelled') navigate('/dashboard/bookings');
+                        else if (c.label === 'Clients') navigate('/dashboard/clients');
+                      }}
+                      className="glass-card p-4 text-center cursor-pointer active:scale-[0.97] transition-transform">
                       <p className="text-xs text-muted-foreground mb-1">{c.label}</p>
                       <p className="text-xl font-bold text-foreground">{c.value}</p>
                     </motion.div>

@@ -71,7 +71,7 @@ const AppShell = () => {
           <Route path="/booking/:id" element={<CustomerRoute><BookingPage /></CustomerRoute>} />
           <Route path="/payment/:id" element={<CustomerRoute><PaymentPage /></CustomerRoute>} />
           <Route path="/appointments" element={<CustomerRoute><AppointmentsPage /></CustomerRoute>} />
-          <Route path="/appointment-details" element={<CustomerRoute><AppointmentDetailsPage /></CustomerRoute>} />
+          <Route path="/appointment-details" element={<SelectedRoleRoute><AppointmentDetailsPage /></SelectedRoleRoute>} />
           <Route path="/chat" element={<CustomerRoute><ChatPage /></CustomerRoute>} />
           <Route path="/review" element={<CustomerRoute><ReviewPage /></CustomerRoute>} />
 

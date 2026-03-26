@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
 import DashboardHeader from '@/components/DashboardHeader';
+import WalkInBookingModal from '@/components/WalkInBookingModal';
 
 interface BookingItem {
   id: string;
@@ -22,6 +23,7 @@ const DashboardHome = () => {
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [stats, setStats] = useState({ total: 0, completed: 0, upcoming: 0 });
   const [loading, setLoading] = useState(true);
+  const [showWalkIn, setShowWalkIn] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -145,10 +147,12 @@ const DashboardHome = () => {
         </div>
 
         {/* Quick Actions */}
-        <button onClick={() => navigate('/dashboard/bookings')}
+        <button onClick={() => setShowWalkIn(true)}
           className="w-full h-12 border-2 border-dashed border-border rounded-2xl text-sm text-muted-foreground flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
           <Plus size={16} className="text-primary" /> Add Walk-in Booking
         </button>
+
+        <WalkInBookingModal open={showWalkIn} onClose={() => setShowWalkIn(false)} onSaved={fetchTodayData} />
 
         {/* Today's Bookings */}
         <div>
@@ -175,7 +179,8 @@ const DashboardHome = () => {
             <div className="space-y-2">
               {bookings.map((b, i) => (
                 <motion.div key={b.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                  className="glass-card p-4">
+                  onClick={() => navigate(`/appointment-details?id=${b.id}`)}
+                  className="glass-card p-4 cursor-pointer active:scale-[0.98] transition-transform">
                   <div className="flex items-center gap-4">
                     <div className="text-center min-w-[50px]">
                       <p className="text-sm font-semibold text-foreground">{b.time}</p>
