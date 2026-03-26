@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Bell, Check, CheckCheck, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -13,7 +14,16 @@ const typeIcons: Record<string, string> = {
 
 const NotificationBell = () => {
   const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  const handleNotifClick = (n: typeof notifications[0]) => {
+    if (!n.read) markAsRead(n.id);
+    setOpen(false);
+    if (n.related_id && (n.type === 'booking_confirmed' || n.type === 'booking_cancelled' || n.type === 'appointment_reminder')) {
+      navigate(`/appointment-details?id=${n.related_id}`);
+    }
+  };
 
   return (
     <div className="relative">
@@ -63,7 +73,7 @@ const NotificationBell = () => {
                   notifications.map(n => (
                     <button
                       key={n.id}
-                      onClick={() => !n.read && markAsRead(n.id)}
+                      onClick={() => handleNotifClick(n)}
                       className={`w-full p-4 text-left border-b border-border/30 hover:bg-secondary/50 transition-colors ${
                         !n.read ? 'bg-primary/5' : ''
                       }`}
