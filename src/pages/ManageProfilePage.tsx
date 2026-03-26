@@ -10,7 +10,7 @@ type Section = 'menu' | 'personal' | 'password' | 'services' | 'portfolio' | 'av
 
 const ManageProfilePage = () => {
   const navigate = useNavigate();
-  const { user, profile, activeRole, refreshProfile } = useAuth();
+  const { user, profile, activeProfile, refreshProfile } = useAuth();
 
   const [section, setSection] = useState<Section>('menu');
   const [name, setName] = useState(profile?.name || '');
@@ -61,12 +61,12 @@ const ManageProfilePage = () => {
   const sections = [
     { key: 'personal' as Section, icon: User, label: 'Personal Information', desc: 'Name, photo, phone, email, DOB, bio' },
     { key: 'password' as Section, icon: Lock, label: 'Password & Security', desc: 'Change password, security settings' },
-    ...(activeRole === 'barber' ? [
+    ...(activeProfile === 'independent_barber' ? [
       { key: 'services' as Section, icon: Scissors, label: 'Services', desc: 'Manage your service offerings' },
       { key: 'portfolio' as Section, icon: Image, label: 'Portfolio', desc: 'Your work photos and gallery' },
       { key: 'availability' as Section, icon: Clock, label: 'Availability', desc: 'Working hours and schedule' },
     ] : []),
-    ...(activeRole === 'shop_owner' ? [
+    ...(activeProfile === 'shop_owner' ? [
       { key: 'shop' as Section, icon: Store, label: 'Shop Details', desc: 'Shop info, address, hours' },
     ] : []),
   ];
@@ -92,7 +92,7 @@ const ManageProfilePage = () => {
               <motion.button key={item.key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                 onClick={() => {
                   if (['services', 'portfolio', 'availability'].includes(item.key)) {
-                    navigate(activeRole === 'barber' ? '/dashboard' : '/shop-dashboard');
+                    navigate(activeProfile === 'independent_barber' ? '/barber-dashboard' : '/dashboard');
                   } else if (item.key === 'shop') {
                     navigate('/shop-onboarding');
                   } else {

@@ -12,7 +12,7 @@ interface ServiceEntry { name: string; price: string; duration: string; }
 
 const BarberOnboardingPage = () => {
   const navigate = useNavigate();
-  const { user, switchRole, getDefaultRoute } = useAuth();
+  const { user, switchProfile, getHomeRoute, refreshProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const totalSteps = 5;
@@ -56,6 +56,20 @@ const BarberOnboardingPage = () => {
 
       setSaving(true);
       try {
+        // Check if barber profile already exists
+        const { data: existingBarber } = await supabase
+          .from('barbers')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (existingBarber) {
+          toast.error('Barber profile already exists');
+          setSaving(false);
+          return;
+        }
+
+        // Add barber role
         const { data: existingRole } = await supabase
           .from('user_roles')
           .select('id')
@@ -68,11 +82,9 @@ const BarberOnboardingPage = () => {
             user_id: user.id,
             role: 'barber',
           });
-
           if (roleError) throw roleError;
         }
 
-        // Create barber profile
         const { data: barber, error: barberError } = await supabase
           .from('barbers')
           .insert({
@@ -91,10 +103,9 @@ const BarberOnboardingPage = () => {
 
         if (barberError) throw barberError;
 
-        // Create services
         const validServices = services.filter(s => s.name.trim() && s.price);
         if (validServices.length > 0) {
-          const { error: svcError } = await supabase.from('services').insert(
+          await supabase.from('services').insert(
             validServices.map(s => ({
               barber_id: barber.id,
               service_name: s.name,
@@ -102,12 +113,12 @@ const BarberOnboardingPage = () => {
               duration: parseInt(s.duration) || 30,
             }))
           );
-          if (svcError) throw svcError;
         }
 
-        toast.success('Profile created! Welcome to BookMyBarber.');
-        switchRole('owner');
-        navigate(getDefaultRoute('owner'), { replace: true });
+        toast.success('Barber profile created!');
+        await refreshProfile();
+        switchProfile('independent_barber');
+        navigate(getHomeRoute('independent_barber'), { replace: true });
       } catch (err: any) {
         toast.error(err.message || 'Failed to create profile');
       } finally {
@@ -150,7 +161,7 @@ const BarberOnboardingPage = () => {
               </div>
               <input placeholder="Your Name *" value={barberName} onChange={e => setBarberName(e.target.value)}
                 className="w-full h-14 px-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              <textarea placeholder="Bio — tell customers about yourself" value={bio} onChange={e => setBio(e.target.value)}
+              <textarea placeholder="Bio" value={bio} onChange={e => setBio(e.target.value)}
                 className="w-full h-24 px-5 py-4 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
               <input placeholder="Years of Experience" value={experience} onChange={e => setExperience(e.target.value.replace(/\D/g, ''))}
                 className="w-full h-14 px-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
@@ -161,17 +172,15 @@ const BarberOnboardingPage = () => {
               </div>
             </motion.div>
           )}
-
           {step === 2 && (
             <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <input placeholder="Full Address" value={address} onChange={e => setAddress(e.target.value)} className="w-full h-14 px-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
               <input placeholder="City" value={city} onChange={e => setCity(e.target.value)} className="w-full h-14 px-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
               <input placeholder="State" value={state} onChange={e => setState(e.target.value)} className="w-full h-14 px-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
               <input placeholder="Pin Code" value={pincode} onChange={e => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))} className="w-full h-14 px-5 rounded-2xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              <div className="glass-card p-4 h-40 rounded-2xl flex items-center justify-center"><p className="text-sm text-muted-foreground">📍 Map location picker will appear here</p></div>
+              <div className="glass-card p-4 h-40 rounded-2xl flex items-center justify-center"><p className="text-sm text-muted-foreground">📍 Map location picker coming soon</p></div>
             </motion.div>
           )}
-
           {step === 3 && (
             <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               {services.map((svc, i) => (
@@ -196,7 +205,6 @@ const BarberOnboardingPage = () => {
               <button onClick={addService} className="w-full h-12 border-2 border-dashed border-border rounded-2xl text-sm text-muted-foreground flex items-center justify-center gap-2"><Plus size={16} /> Add Service</button>
             </motion.div>
           )}
-
           {step === 4 && (
             <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
               {workingHours.map((wh, i) => (
@@ -216,10 +224,9 @@ const BarberOnboardingPage = () => {
               ))}
             </motion.div>
           )}
-
           {step === 5 && (
             <motion.div key="s5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-              <p className="text-sm text-muted-foreground">Upload photos of your best work to attract customers.</p>
+              <p className="text-sm text-muted-foreground">Upload photos of your best work.</p>
               <div className="grid grid-cols-3 gap-3">
                 {Array.from({ length: portfolioCount }, (_, i) => (
                   <div key={i} className="aspect-square rounded-2xl bg-secondary flex items-center justify-center overflow-hidden"><div className="w-full h-full gold-gradient opacity-20" /></div>
@@ -229,7 +236,7 @@ const BarberOnboardingPage = () => {
                   <Camera size={24} className="text-muted-foreground" /><span className="text-xs text-muted-foreground">Add</span>
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground text-center">You can add more photos later from your dashboard.</p>
+              <p className="text-xs text-muted-foreground text-center">You can add more later from your dashboard.</p>
             </motion.div>
           )}
         </AnimatePresence>

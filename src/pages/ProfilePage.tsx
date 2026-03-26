@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { User, LogOut, ChevronRight, CreditCard, Camera, Loader2, ArrowRightLeft, Settings, Scissors, Store, Heart, Star, HelpCircle, Info, Eye } from 'lucide-react';
+import { User, LogOut, ChevronRight, CreditCard, Camera, Loader2, ArrowRightLeft, Settings, Scissors, Store, Heart, Star, HelpCircle, Info, Eye, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardBottomNav from '@/components/DashboardBottomNav';
-import { AppRole } from '@/lib/role-routing';
+import { ActiveProfile, PROFILE_LABELS } from '@/lib/role-routing';
 
 const socialLinks = [
   { label: 'Instagram', url: '#', icon: '📸' },
@@ -17,47 +17,61 @@ const socialLinks = [
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, profile, roles, appRole, ownerType, signOut, loading, switchRole, enterGuestMode, getDefaultRoute } = useAuth();
-  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
-  const [pendingRole, setPendingRole] = useState<AppRole | null>(null);
+  const { user, profile, activeProfile, isGuest, signOut, loading, switchProfile, enterGuestMode, getHomeRoute, hasProfile } = useAuth();
+  const [showSwitcher, setShowSwitcher] = useState(false);
+  const [showCreateProfile, setShowCreateProfile] = useState(false);
+  const [pendingProfile, setPendingProfile] = useState<ActiveProfile | null>(null);
 
   const displayName = profile?.name || user?.user_metadata?.name || 'Guest';
   const displayEmail = profile?.email || user?.email || '';
+  const currentLabel = activeProfile ? PROFILE_LABELS[activeProfile] : 'Guest';
 
-  const handleSwitchRole = (role: AppRole) => {
-    if (!user) {
-      setPendingRole(role);
+  const handleSwitch = (p: ActiveProfile) => {
+    if (!user && !isGuest) {
+      // Not logged in, not guest — show auth options
+      setPendingProfile(p);
       return;
     }
 
-    if (role === 'owner' && !roles.some((item) => item === 'barber' || item === 'shop_owner')) {
-      setShowRoleSwitcher(false);
-      toast.info('Set up your owner profile first');
-      navigate('/barber-onboarding');
+    if (user && !hasProfile(p)) {
+      // Logged in but doesn't have this profile → go to creation
+      setShowSwitcher(false);
+      if (p === 'shop_owner') navigate('/shop-onboarding');
+      else if (p === 'independent_barber') navigate('/barber-onboarding');
       return;
     }
 
-    const switched = switchRole(role);
-    if (!switched) {
-      if (role === 'owner') {
-        setShowRoleSwitcher(false);
-        toast.info('Owner access is not available on this account yet');
-      }
-      return;
+    const switched = switchProfile(p);
+    if (switched) {
+      setShowSwitcher(false);
+      toast.success(`Switched to ${PROFILE_LABELS[p]}`);
+      navigate(getHomeRoute(p), { replace: true });
     }
-
-    setShowRoleSwitcher(false);
-    setPendingRole(null);
-    toast.success(`Switched to ${role} mode`);
-    navigate(getDefaultRoute(role), { replace: true });
   };
 
-  const handleGuestRole = () => {
-    if (!pendingRole) return;
-    enterGuestMode(pendingRole);
-    setShowRoleSwitcher(false);
-    toast.success(`Continuing as ${pendingRole}`);
-    navigate(getDefaultRoute(pendingRole), { replace: true });
+  const handleGuestForProfile = () => {
+    if (!pendingProfile) return;
+    enterGuestMode(pendingProfile);
+    setShowSwitcher(false);
+    setPendingProfile(null);
+    toast.success(`Guest mode: ${PROFILE_LABELS[pendingProfile]}`);
+    navigate(getHomeRoute(pendingProfile), { replace: true });
+  };
+
+  const handleCreateProfile = (type: 'shop_owner' | 'independent_barber') => {
+    setShowCreateProfile(false);
+    if (!user) {
+      // Not logged in — show auth options for this profile type
+      setPendingProfile(type);
+      setShowSwitcher(true);
+      return;
+    }
+    if (hasProfile(type)) {
+      toast.error('Profile already exists');
+      return;
+    }
+    if (type === 'shop_owner') navigate('/shop-onboarding');
+    else navigate('/barber-onboarding');
   };
 
   const handleLogout = async () => {
@@ -66,27 +80,15 @@ const ProfilePage = () => {
     navigate('/');
   };
 
-  const roleLabels: Record<string, string> = {
-    customer: '👤 Customer',
-    owner: '🏪 Owner',
-    barber: '✂️ Owner',
-    shop_owner: '🏪 Owner',
-    admin: '🛡️ Admin',
-  };
-
-  const isOwnerMode = appRole === 'owner';
-  const currentRoleLabel = appRole === 'owner'
-    ? roleLabels.owner
-    : appRole === 'customer'
-      ? roleLabels.customer
-      : 'Guest';
+  const isOwnerMode = activeProfile === 'shop_owner';
+  const isBarberMode = activeProfile === 'independent_barber';
 
   const menuSections = [
     {
       title: 'Account',
       items: [
         { icon: User, label: 'Manage Profile', action: () => navigate('/manage-profile') },
-        ...(!isOwnerMode ? [{ icon: Heart, label: 'Saved / Favorites', action: () => toast.info('Coming soon') }] : []),
+        ...(!isOwnerMode && !isBarberMode ? [{ icon: Heart, label: 'Saved / Favorites', action: () => toast.info('Coming soon') }] : []),
         { icon: CreditCard, label: 'Payments', action: () => navigate('/payments') },
         { icon: Settings, label: 'Settings', action: () => navigate('/settings') },
       ],
@@ -94,21 +96,28 @@ const ProfilePage = () => {
     ...(isOwnerMode ? [{
       title: 'Business',
       items: [
-        { icon: ownerType === 'shop_owner' ? Store : Scissors, label: 'Go to Dashboard', action: () => navigate(getDefaultRoute('owner')) },
-        ...(ownerType === 'shop_owner' ? [{ icon: Eye, label: 'Shop Visibility', action: () => toast.info('Visibility settings coming soon') }] : []),
+        { icon: Store, label: 'Go to Dashboard', action: () => navigate(getHomeRoute('shop_owner')) },
+        { icon: Eye, label: 'Shop Visibility', action: () => toast.info('Coming soon') },
+      ],
+    }] : []),
+    ...(isBarberMode ? [{
+      title: 'Business',
+      items: [
+        { icon: Scissors, label: 'Go to Dashboard', action: () => navigate(getHomeRoute('independent_barber')) },
       ],
     }] : []),
     {
-      title: 'Role',
+      title: 'Profiles',
       items: [
-        { icon: ArrowRightLeft, label: 'Switch Profile', action: () => setShowRoleSwitcher(true) },
+        { icon: ArrowRightLeft, label: 'Switch Profile', action: () => setShowSwitcher(true) },
+        { icon: Plus, label: 'Create New Profile', action: () => setShowCreateProfile(true) },
       ],
     },
     {
       title: 'Support',
       items: [
         { icon: HelpCircle, label: 'Help & Support', action: () => navigate('/help-support') },
-        { icon: Star, label: 'Rate App', action: () => toast.info('App Store rating coming soon') },
+        { icon: Star, label: 'Rate App', action: () => toast.info('Coming soon') },
         { icon: Info, label: 'About Us', action: () => navigate('/about') },
       ],
     },
@@ -121,6 +130,15 @@ const ProfilePage = () => {
       <div className="px-5 pt-14 pb-2">
         <h1 className="text-2xl font-bold text-foreground">Profile</h1>
       </div>
+
+      {/* Guest indicator */}
+      {isGuest && (
+        <div className="px-5 mb-3">
+          <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-2 text-xs text-primary font-medium text-center">
+            🔓 Guest Mode — No data is saved
+          </div>
+        </div>
+      )}
 
       {/* Profile Card */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-5 mb-5">
@@ -139,9 +157,9 @@ const ProfilePage = () => {
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-semibold text-foreground truncate">{displayName}</h2>
               <p className="text-sm text-muted-foreground truncate">{displayEmail}</p>
-              {appRole && (
-                <span className="inline-flex items-center gap-1 text-xs text-primary font-medium capitalize mt-0.5">
-                  {currentRoleLabel}
+              {activeProfile && (
+                <span className="inline-flex items-center gap-1 text-xs text-primary font-medium mt-0.5">
+                  {currentLabel}
                 </span>
               )}
             </div>
@@ -204,57 +222,78 @@ const ProfilePage = () => {
         <p className="text-center text-[10px] text-muted-foreground/50 py-4">BookMyBarber v1.0.0</p>
       </div>
 
-      {/* Role Switcher Modal */}
-      {showRoleSwitcher && (
+      {/* Switch Profile Modal */}
+      {showSwitcher && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-8">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card p-6 w-full max-w-sm">
             <h3 className="text-lg font-semibold text-foreground mb-1">Switch Profile</h3>
-            <p className="text-xs text-muted-foreground mb-4">Current: {currentRoleLabel}</p>
+            <p className="text-xs text-muted-foreground mb-4">Current: {currentLabel}</p>
 
-            {pendingRole && !user ? (
+            {pendingProfile && !user ? (
               <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Choose how you want to continue in {pendingRole} mode.</p>
-                <button onClick={() => navigate(`/signin?role=${pendingRole}`)}
-                  className="w-full p-4 rounded-xl text-left text-sm font-medium gold-gradient text-primary-foreground">
-                  Login
-                </button>
-                <button onClick={() => navigate(`/signup?role=${pendingRole}`)}
-                  className="w-full p-4 rounded-xl text-left text-sm font-medium bg-secondary text-foreground hover:bg-secondary/80">
-                  Sign Up
-                </button>
-                <button onClick={handleGuestRole}
-                  className="w-full p-4 rounded-xl text-left text-sm font-medium bg-secondary text-foreground hover:bg-secondary/80">
-                  Continue as Guest
-                </button>
-                <button onClick={() => setPendingRole(null)} className="w-full mt-2 h-10 bg-secondary/50 rounded-xl text-sm text-muted-foreground">
-                  Back
-                </button>
+                <p className="text-xs text-muted-foreground mb-2">Continue as {PROFILE_LABELS[pendingProfile]}:</p>
+                <button onClick={() => { setShowSwitcher(false); navigate('/signin'); }}
+                  className="w-full p-4 rounded-xl text-left text-sm font-medium gold-gradient text-primary-foreground">Login</button>
+                <button onClick={() => { setShowSwitcher(false); navigate('/signup'); }}
+                  className="w-full p-4 rounded-xl text-left text-sm font-medium bg-secondary text-foreground hover:bg-secondary/80">Sign Up</button>
+                <button onClick={handleGuestForProfile}
+                  className="w-full p-4 rounded-xl text-left text-sm font-medium bg-secondary text-foreground hover:bg-secondary/80">Continue as Guest</button>
+                <button onClick={() => setPendingProfile(null)} className="w-full mt-2 h-10 bg-secondary/50 rounded-xl text-sm text-muted-foreground">Back</button>
               </div>
             ) : (
               <div className="space-y-2">
-                <button onClick={() => handleSwitchRole('customer')}
-                  className={`w-full p-4 rounded-xl text-left text-sm font-medium transition-all ${
-                    appRole === 'customer' ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary/80'
-                  }`}>
-                  👤 Customer
-                </button>
-                <button onClick={() => handleSwitchRole('owner')}
-                  className={`w-full p-4 rounded-xl text-left text-sm font-medium transition-all ${
-                    appRole === 'owner' ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary/80'
-                  }`}>
-                  🏪 Owner
-                </button>
+                {(['customer', 'shop_owner', 'independent_barber'] as ActiveProfile[]).map(p => {
+                  const available = !user || hasProfile(p);
+                  return (
+                    <button key={p} onClick={() => handleSwitch(p)}
+                      className={`w-full p-4 rounded-xl text-left text-sm font-medium transition-all ${
+                        activeProfile === p ? 'gold-gradient text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary/80'
+                      }`}>
+                      <span>{PROFILE_LABELS[p]}</span>
+                      {user && !available && <span className="text-xs text-muted-foreground ml-2">(not created)</span>}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
-            <button onClick={() => { setShowRoleSwitcher(false); setPendingRole(null); }} className="w-full mt-4 h-10 bg-secondary rounded-xl text-sm text-muted-foreground">
-              {pendingRole && !user ? 'Close' : 'Cancel'}
-            </button>
+            <button onClick={() => { setShowSwitcher(false); setPendingProfile(null); }} className="w-full mt-4 h-10 bg-secondary rounded-xl text-sm text-muted-foreground">Cancel</button>
           </motion.div>
         </div>
       )}
 
-      {appRole === 'owner' && <DashboardBottomNav />}
+      {/* Create New Profile Modal */}
+      {showCreateProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-8">
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card p-6 w-full max-w-sm">
+            <h3 className="text-lg font-semibold text-foreground mb-1">Create New Profile</h3>
+            <p className="text-xs text-muted-foreground mb-4">Add a professional profile to your account</p>
+
+            <div className="space-y-2">
+              <button onClick={() => handleCreateProfile('shop_owner')}
+                className="w-full glass-card p-5 flex items-center gap-4 text-left active:scale-[0.98] transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center"><Store size={24} className="text-primary" /></div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-foreground">Shop Owner</h4>
+                  <p className="text-xs text-muted-foreground">Create a shop, add barbers</p>
+                </div>
+              </button>
+              <button onClick={() => handleCreateProfile('independent_barber')}
+                className="w-full glass-card p-5 flex items-center gap-4 text-left active:scale-[0.98] transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center"><Scissors size={24} className="text-primary" /></div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-foreground">Independent Barber</h4>
+                  <p className="text-xs text-muted-foreground">Manage your own schedule</p>
+                </div>
+              </button>
+            </div>
+
+            <button onClick={() => setShowCreateProfile(false)} className="w-full mt-4 h-10 bg-secondary rounded-xl text-sm text-muted-foreground">Cancel</button>
+          </motion.div>
+        </div>
+      )}
+
+      {(activeProfile === 'shop_owner' || activeProfile === 'independent_barber') && <DashboardBottomNav />}
     </div>
   );
 };
