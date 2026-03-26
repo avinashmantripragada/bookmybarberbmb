@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { User, LogOut, ChevronRight, CreditCard, Camera, Loader2, ArrowRightLeft, Settings, Scissors, Store, Heart, Star, HelpCircle, Info, Eye, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import DashboardBottomNav from '@/components/DashboardBottomNav';
 import { ActiveProfile, PROFILE_LABELS } from '@/lib/role-routing';
 
@@ -22,9 +23,32 @@ const ProfilePage = () => {
   const [showCreateProfile, setShowCreateProfile] = useState(false);
   const [pendingProfile, setPendingProfile] = useState<ActiveProfile | null>(null);
 
-  const displayName = profile?.name || user?.user_metadata?.name || 'Guest';
+  const [roleDisplayName, setRoleDisplayName] = useState('');
+
   const displayEmail = profile?.email || user?.email || '';
   const currentLabel = activeProfile ? PROFILE_LABELS[activeProfile] : 'Guest';
+
+  // Load role-specific display name
+  useEffect(() => {
+    if (!user) {
+      setRoleDisplayName(isGuest ? 'Guest' : '');
+      return;
+    }
+    const loadName = async () => {
+      if (activeProfile === 'shop_owner') {
+        const { data } = await supabase.from('shops').select('shop_name').eq('owner_id', user.id).limit(1).single();
+        setRoleDisplayName(data?.shop_name || profile?.name || 'Shop Owner');
+      } else if (activeProfile === 'independent_barber') {
+        const { data } = await supabase.from('barbers').select('name').eq('user_id', user.id).limit(1).single();
+        setRoleDisplayName(data?.name || profile?.name || 'Barber');
+      } else {
+        setRoleDisplayName(profile?.name || user?.user_metadata?.name || 'User');
+      }
+    };
+    loadName();
+  }, [user, activeProfile, profile]);
+
+  const displayName = roleDisplayName || profile?.name || user?.user_metadata?.name || 'Guest';
 
   const handleSwitch = (p: ActiveProfile) => {
     if (!user && !isGuest) {
