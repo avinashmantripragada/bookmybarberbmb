@@ -248,6 +248,11 @@ const DashboardShop = () => {
                     <p className="text-sm text-muted-foreground">No barbers yet</p>
                   </div>
                 )}
+                <button onClick={() => setShowAddBarber(true)}
+                  className="w-full h-12 border-2 border-dashed border-border rounded-2xl text-sm text-muted-foreground flex items-center justify-center gap-2">
+                  <Plus size={16} /> Add Barber
+                </button>
+                {shopId && <AddBarberModal open={showAddBarber} shopId={shopId} onClose={() => setShowAddBarber(false)} onSaved={fetchData} />}
               </div>
             )}
 
@@ -271,7 +276,11 @@ const DashboardShop = () => {
                 <div className="grid grid-cols-2 gap-3">
                   {insightCards.map((c, i) => (
                     <motion.div key={c.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
-                      className="glass-card p-4 text-center">
+                      onClick={() => {
+                        if (c.label === 'Bookings' || c.label === 'Completed' || c.label === 'Cancelled') navigate('/dashboard/bookings');
+                        else if (c.label === 'Clients') navigate('/dashboard/clients');
+                      }}
+                      className="glass-card p-4 text-center cursor-pointer active:scale-[0.97] transition-transform">
                       <p className="text-xs text-muted-foreground mb-1">{c.label}</p>
                       <p className="text-xl font-bold text-foreground">{c.value}</p>
                     </motion.div>
