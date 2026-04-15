@@ -62,36 +62,34 @@ The system supports real-time booking, walk-in management, and role-based dashbo
 👉 https://bookmybarberbmb.lovable.app
 
 ---
-
 ## 📸 Screenshots
 
-### Login Screen
-![Login](./login-screen.png)
+### Login Screen  
+<img src="./login-screen.png" width="250"/>
 
-### Customer Home
-![Customer Home](./customer-home.png)
+### Customer Home  
+<img src="./customer-home.png" width="250"/>
 
-### Barber Profile
-![Barber Profile](./barber-profile.png)
+### Barber Profile  
+<img src="./barber-profile.png" width="250"/>
 
-### Booking – Select Time
-![Booking Select Time](./booking-select-time.png)
+### Booking – Select Time  
+<img src="./booking-select-time.png" width="250"/>
 
-### Booking – Summary
-![Booking Summary](./booking-summary.png)
+### Booking – Summary  
+<img src="./booking-summary.png" width="250"/>
 
-### Booking – Confirmation
-![Booking Confirmation](./booking-confirmation.png)
+### Booking – Confirmation  
+<img src="./booking-confirmation.png" width="250"/>
 
-### Owner Dashboard
-![Owner Dashboard](./owner-dashboard.png)
+### Owner Dashboard  
+<img src="./owner-dashboard.png" width="250"/>
 
-### Appointment (Pending)
-![Appointment Pending](./appointment-pending.png)
+### Appointment (Pending)  
+<img src="./appointment-pending.png" width="250"/>
 
-### Appointment (Completed)
-![Appointment Completed](./appointment-completed.png)
-
+### Appointment (Completed)  
+<img src="./appointment-completed.png" width="250"/>
 ---
 
 ## 💡 Learnings
