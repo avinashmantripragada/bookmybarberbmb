@@ -1,9 +1,26 @@
+# 💈 BookMyBarber
+
+A modern multi-role appointment booking platform for barbers, salon owners, and customers.
+
+🔗 Live Demo: https://bookmybarberbmb.lovable.app
+
 ## 🚀 Overview
 BookMyBarber is a multi-role appointment booking platform designed to connect customers, barbers, and shop owners.
 
 The system supports real-time booking, walk-in management, and role-based dashboards to streamline operations for barber shops.
 
 ---
+
+## 🎯 Demo Flow
+
+1. Login or continue as guest  
+2. Browse barbers or shops  
+3. Select a barber/shop  
+4. Book appointment (date & time)  
+5. Confirm booking  
+6. View booking in dashboard  
+7. Manage appointment (accept / complete / cancel)
+
 
 ## 👥 User Roles
 
@@ -56,6 +73,10 @@ The system supports real-time booking, walk-in management, and role-based dashbo
 - AI-assisted development tools
 
 ---
+
+## ⚙️ Architecture
+
+Frontend handles UI and role-based routing, while backend services manage booking data, user roles, and state persistence.
 
 ## 🔗 Live Demo
 
