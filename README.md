@@ -99,6 +99,25 @@ The system supports real-time booking, walk-in management, and role-based dashbo
 - Cloud-based deployment via Lovable platform  
 - Web-based hosting and live preview environment  
 
+## 🤖 AI Tools & Development Approach
+
+### AI Tools Used
+- GPT-4 / ChatGPT (OpenAI)  
+- Claude (Anthropic)  
+- GitHub Copilot  
+- Cursor AI  
+
+### AI Capabilities
+- Prompt Engineering for structured feature development  
+- AI-assisted code generation and debugging  
+- Rapid prototyping using LLMs  
+- Iterative development using AI-driven workflows  
+
+### Application in This Project
+- Accelerated UI and feature development using AI tools  
+- Designed and implemented booking workflows with AI-assisted iteration  
+- Debugged and optimized components using AI-based suggestions  
+
 ---
 
 ## ⚙️ Architecture
