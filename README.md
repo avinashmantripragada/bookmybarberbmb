@@ -65,7 +65,32 @@ The system supports real-time booking, walk-in management, and role-based dashbo
 
 ## 📸 Screenshots
 
-(Add screenshots here – dashboard, booking flow, etc.)
+### Login Screen
+![Login](./login-screen.png)
+
+### Customer Home
+![Customer Home](./customer-home.png)
+
+### Barber Profile
+![Barber Profile](./barber-profile.png)
+
+### Booking – Select Time
+![Booking Select Time](./booking-select-time.png)
+
+### Booking – Summary
+![Booking Summary](./booking-summary.png)
+
+### Booking – Confirmation
+![Booking Confirmation](./booking-confirmation.png)
+
+### Owner Dashboard
+![Owner Dashboard](./owner-dashboard.png)
+
+### Appointment (Pending)
+![Appointment Pending](./appointment-pending.png)
+
+### Appointment (Completed)
+![Appointment Completed](./appointment-completed.png)
 
 ---
 
