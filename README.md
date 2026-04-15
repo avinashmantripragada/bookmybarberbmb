@@ -66,11 +66,38 @@ The system supports real-time booking, walk-in management, and role-based dashbo
 
 ## 🛠 Tech Stack
 
-- React
-- TypeScript
-- Tailwind CSS
-- Vite
-- AI-assisted development tools
+### Frontend
+- React  
+- TypeScript  
+- Vite  
+- Tailwind CSS  
+- shadcn/ui  
+
+### Application Architecture
+- Role-based access control (Customer / Shop Owner / Independent Barber)
+- Client-side routing and dynamic rendering
+- Component-based architecture
+- State management for booking workflows and UI interactions
+
+### Backend & Data Handling
+- API-driven architecture (tool-managed backend services)
+- CRUD operations for bookings, users, and shop data
+- Authentication and session handling
+- Real-time state updates for booking lifecycle
+
+### AI & Development Approach
+- AI-assisted development (LLMs, prompt engineering)
+- Rapid prototyping and iterative development using AI tools
+- Debugging and feature generation using AI workflows
+
+### Dev Tools & Workflow
+- Git & GitHub  
+- Version control and repository management  
+- Agile-style iterative development  
+
+### Deployment
+- Cloud-based deployment via Lovable platform  
+- Web-based hosting and live preview environment  
 
 ---
 
