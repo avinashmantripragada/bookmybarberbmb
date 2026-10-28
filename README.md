@@ -2,7 +2,7 @@
 
 A modern multi-role appointment booking platform for barbers, salon owners, and customers.
 
-🔗 Live Demo: https://bookmybarberbmb.lovable.app
+🔗 Live Demo: https://bookmybarber.co/
 
 ## 🚀 Overview
 BookMyBarber is a multi-role appointment booking platform designed to connect customers, barbers, and shop owners.
